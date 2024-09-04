@@ -37,7 +37,7 @@ const Sidebar = () => {
         isOpen ? "left-0" : "-left-64",
         "lg:left-0" // Always visible on large screens
       )}>
-        <div className="flex flex-col items-center space-y-2 px-4">
+        <div className="flex flex-col items-left space-y-2 px-4">
           <Image src={logo} alt="Logo" width={100} height={100} />
         </div>
 

@@ -52,7 +52,7 @@ export default function RootLayout({
                     className="font-bold hover:underline"
                     rel="noreferrer"
                   >
-                    Supabase
+                    Love In Action
                   </a>
                 </p>
               </footer>
