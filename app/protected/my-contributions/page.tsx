@@ -7,13 +7,19 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { createClient } from '@/utils/supabase/client';
 import { InfoIcon } from 'lucide-react';
 
+// Define a type for your contributions
+interface Contribution {
+  Amount: number;
+  'First payment date (America/New_York)': string;
+}
+
 const MyContributions = () => {
-  const [contributions, setContributions] = useState([]);
+  const [contributions, setContributions] = useState<Contribution[]>([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [largestDonation, setLargestDonation] = useState(0);
   const [contactSince, setContactSince] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchContributions = async () => {
@@ -29,11 +35,15 @@ const MyContributions = () => {
 
           if (error) throw error;
 
-          setContributions(data);
-          const total = data.reduce((sum, contribution) => sum + contribution.Amount, 0);
+          setContributions(data as Contribution[]);
+          const total = data.reduce((sum: number, contribution: Contribution) => sum + contribution.Amount, 0);
           setTotalAmount(total);
-          setLargestDonation(Math.max(...data.map(c => c.Amount)));
-          setContactSince(new Date(Math.min(...data.map(c => new Date(c['First payment date (America/New_York)'])))).toLocaleString('default', { month: 'long', year: 'numeric' }));
+          setLargestDonation(Math.max(...data.map((c: Contribution) => c.Amount)));
+          setContactSince(
+            new Date(
+              Math.min(...data.map((c: Contribution) => new Date(c['First payment date (America/New_York)']).getTime()))
+            ).toLocaleString('default', { month: 'long', year: 'numeric' })
+          );
         }
       } catch (err) {
         setError('Failed to fetch contributions');
@@ -50,7 +60,7 @@ const MyContributions = () => {
 
   return (
     <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-6">My Contributions</h1>
+      <h1 className="text-3xl font-bold mb-6">My Contributions</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <Card>
@@ -61,8 +71,6 @@ const MyContributions = () => {
             <p className="text-3xl font-bold text-green-500">${totalAmount.toFixed(2)}</p>
           </CardContent>
         </Card>
-    
-
         <Card>
           <CardHeader>
             <CardTitle>CONTACT SINCE</CardTitle>
