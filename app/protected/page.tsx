@@ -64,16 +64,16 @@ const AllStatistics = () => {
           donations.length > 0 ? totalDonations / donations.length : 0;
 
         // Process donations trend
-        const donationsTrend = donations.reduce((acc, donation) => {
-          const date = new Date(
-            donation["First payment date (America/New_York)"]
-          );
-          const month = date.toLocaleString("default", { month: "short" });
-          const year = date.getFullYear();
-          const key = `${month} ${year}`;
-          acc[key] = (acc[key] || 0) + donation.Amount;
-          return acc;
-        }, {});
+   // Process donations trend
+const donationsTrend = donations.reduce((acc: { [key: string]: number }, donation) => {
+  const date = new Date(donation["First payment date (America/New_York)"]);
+  const month = date.toLocaleString("default", { month: "short" });
+  const year = date.getFullYear();
+  const key = `${month} ${year}`;
+  acc[key] = (acc[key] || 0) + donation.Amount;
+  return acc;
+}, {});
+
 
         const donationsTrendArray = Object.entries(donationsTrend)
           .map(([month, amount]) => {
