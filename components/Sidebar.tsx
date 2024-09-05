@@ -22,10 +22,11 @@ const Sidebar = () => {
   const pathname = usePathname();
 
   const navItems = [
-    { href: "/dashboard", icon: Home, label: "All Statistics" },
+    { href: "/protected", icon: Home, label: "All Statistics" },
     { href: "/protected/your-child", icon: Heart, label: "Your Child" },
-    { href: "/donation", icon: DollarSign, label: "Donation" },
-    { href: "/profile", icon: User, label: "Profile" },
+    { href: "/protected/profile", icon: User, label: "Profile" },
+    { href: "/protected/my-contributions", icon: DollarSign, label: "My Contributions" },
+    
   ];
 
   const toggleSidebar = () => setIsOpen(!isOpen);
