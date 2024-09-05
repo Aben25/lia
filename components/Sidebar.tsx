@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
@@ -16,17 +16,38 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { createClient } from '@/utils/supabase/client';
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const pathname = usePathname();
+  const supabase = createClient();
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsLoggedIn(!!session);
+    };
+
+    checkAuthStatus();
+
+    // Set up a listener for authentication state changes
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsLoggedIn(!!session);
+    });
+
+    // Clean up the listener when the component unmounts
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   const navItems = [
     { href: "/protected", icon: Home, label: "All Statistics" },
     { href: "/protected/your-child", icon: Heart, label: "Your Child" },
     { href: "/protected/profile", icon: User, label: "Profile" },
     { href: "/protected/my-contributions", icon: DollarSign, label: "My Contributions" },
-    
   ];
 
   const toggleSidebar = () => setIsOpen(!isOpen);
@@ -35,6 +56,10 @@ const Sidebar = () => {
     e.preventDefault();
     window.location.href = 'mailto:info@loveinaction.co?subject=Support Request';
   };
+
+  if (!isLoggedIn) {
+    return null; // Don't render the sidebar if the user is not logged in
+  }
 
   return (
     <>
