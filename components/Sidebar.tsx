@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname } from 'next/navigation';
 import {
   Home,
   User,
@@ -13,10 +13,10 @@ import {
   X,
   Mail,
   Phone,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
-import logo from "@assets/logo/white_main_transparent@600x.png";
-import { Button } from "@/components/ui/button";
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import logo from '@assets/logo/white_main_transparent@600x.png';
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -24,8 +24,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { createClient } from "@/utils/supabase/client";
+} from '@/components/ui/dialog';
+import { createClient } from '@/utils/supabase/client';
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -57,13 +57,13 @@ const Sidebar = () => {
   }, [supabase]);
 
   const navItems = [
-    { href: "/protected", icon: Home, label: "All Statistics" },
-    { href: "/protected/your-child", icon: Heart, label: "Your Child" },
-    { href: "/protected/profile", icon: User, label: "Profile" },
+    { href: '/protected', icon: Home, label: 'All Statistics' },
+    { href: '/protected/your-child', icon: Heart, label: 'Your Child' },
+    { href: '/protected/profile', icon: User, label: 'Profile' },
     {
-      href: "/protected/my-contributions",
+      href: '/protected/my-contributions',
       icon: DollarSign,
-      label: "My Contributions",
+      label: 'My Contributions',
     },
   ];
 
@@ -72,10 +72,10 @@ const Sidebar = () => {
   const handleEmailSupport = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     window.location.href =
-      "mailto:info@loveinaction.co?subject=Support Request";
+      'mailto:info@loveinaction.co?subject=Support Request';
   };
 
-  if (pathname === "/sign-in") {
+  if (pathname === '/sign-in') {
     return null; // Don't render the sidebar if the user is not logged in
   }
 
@@ -92,9 +92,9 @@ const Sidebar = () => {
       {/* Sidebar */}
       <div
         className={cn(
-          "bg-blue-900 text-white w-64 space-y-6 py-7 px-2 fixed h-full z-10 transition-all duration-300 ease-in-out",
-          isOpen ? "left-0" : "-left-64",
-          "lg:left-0" // Always visible on large screens
+          'bg-blue-900 text-white w-64 space-y-6 py-7 px-2 fixed h-full z-10 transition-all duration-300 ease-in-out',
+          isOpen ? 'left-0' : '-left-64',
+          'lg:left-0' // Always visible on large screens
         )}
       >
         <div className="flex flex-col items-left space-y-2 px-4">
@@ -107,10 +107,10 @@ const Sidebar = () => {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center py-2.5 px-4 rounded transition duration-200",
+                'flex items-center py-2.5 px-4 rounded transition duration-200',
                 pathname === item.href
-                  ? "bg-blue-800 text-white"
-                  : "hover:bg-blue-800 text-blue-100"
+                  ? 'bg-blue-800 text-white'
+                  : 'hover:bg-blue-800 text-blue-100'
               )}
               onClick={() => setIsOpen(false)} // Close sidebar on mobile when link is clicked
             >
@@ -149,7 +149,7 @@ const Sidebar = () => {
                   </Button>
                   <Button
                     className="flex items-center justify-center gap-2"
-                    onClick={() => (window.location.href = "tel:+1234567890")} // Replace with actual support phone number
+                    onClick={() => (window.location.href = 'tel:+1234567890')} // Replace with actual support phone number
                   >
                     <Phone className="mr-2 h-4 w-4" />
                     Call Support
