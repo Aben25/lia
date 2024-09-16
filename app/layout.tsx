@@ -36,7 +36,6 @@ export default function RootLayout({
           <div className="min-h-screen flex">
             {/* Sidebar */}
             <Sidebar />
-
             {/* Main Content */}
             <div className="flex-1 flex flex-col">
               {/* Header */}
@@ -69,7 +68,7 @@ export default function RootLayout({
               </header>
 
               {/* Page Content */}
-              <main className="flex-1 w-full max-w-5xl mx-auto p-5">
+              <main className="flex-1 place-content-center w-full max-w-5xl mx-auto p-5 content-container">
                 {children}
               </main>
 

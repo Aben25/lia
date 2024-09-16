@@ -1,13 +1,22 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { Home, User, DollarSign, Heart, Menu, X, Mail, Phone } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import {
+  Home,
+  User,
+  DollarSign,
+  Heart,
+  Menu,
+  X,
+  Mail,
+  Phone,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import logo from "@assets/logo/white_main_transparent@600x.png";
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +25,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from "@/utils/supabase/client";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -26,16 +35,20 @@ const Sidebar = () => {
 
   useEffect(() => {
     const checkAuthStatus = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       setIsLoggedIn(!!session);
     };
 
     checkAuthStatus();
 
     // Set up a listener for authentication state changes
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsLoggedIn(!!session);
-    });
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setIsLoggedIn(!!session);
+      }
+    );
 
     // Clean up the listener when the component unmounts
     return () => {
@@ -47,17 +60,22 @@ const Sidebar = () => {
     { href: "/protected", icon: Home, label: "All Statistics" },
     { href: "/protected/your-child", icon: Heart, label: "Your Child" },
     { href: "/protected/profile", icon: User, label: "Profile" },
-    { href: "/protected/my-contributions", icon: DollarSign, label: "My Contributions" },
+    {
+      href: "/protected/my-contributions",
+      icon: DollarSign,
+      label: "My Contributions",
+    },
   ];
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
   const handleEmailSupport = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    window.location.href = 'mailto:info@loveinaction.co?subject=Support Request';
+    window.location.href =
+      "mailto:info@loveinaction.co?subject=Support Request";
   };
 
-  if (!isLoggedIn) {
+  if (pathname === "/sign-in") {
     return null; // Don't render the sidebar if the user is not logged in
   }
 
@@ -72,24 +90,26 @@ const Sidebar = () => {
       </button>
 
       {/* Sidebar */}
-      <div className={cn(
-        "bg-blue-900 text-white w-64 space-y-6 py-7 px-2 fixed h-full z-10 transition-all duration-300 ease-in-out",
-        isOpen ? "left-0" : "-left-64",
-        "lg:left-0" // Always visible on large screens
-      )}>
+      <div
+        className={cn(
+          "bg-blue-900 text-white w-64 space-y-6 py-7 px-2 fixed h-full z-10 transition-all duration-300 ease-in-out",
+          isOpen ? "left-0" : "-left-64",
+          "lg:left-0" // Always visible on large screens
+        )}
+      >
         <div className="flex flex-col items-left space-y-2 px-4">
           <Image src={logo} alt="Logo" width={100} height={100} />
         </div>
 
         <nav className="space-y-2 mt-8">
           {navItems.map((item) => (
-            <Link 
-              key={item.href} 
+            <Link
+              key={item.href}
               href={item.href}
               className={cn(
                 "flex items-center py-2.5 px-4 rounded transition duration-200",
-                pathname === item.href 
-                  ? "bg-blue-800 text-white" 
+                pathname === item.href
+                  ? "bg-blue-800 text-white"
                   : "hover:bg-blue-800 text-blue-100"
               )}
               onClick={() => setIsOpen(false)} // Close sidebar on mobile when link is clicked
@@ -103,7 +123,9 @@ const Sidebar = () => {
         <div className="px-4 mt-auto">
           <div className="bg-blue-800 p-4 rounded-lg">
             <h3 className="font-semibold mb-2">Need Help?</h3>
-            <p className="text-sm text-blue-200 mb-3">Contact our support team for assistance.</p>
+            <p className="text-sm text-blue-200 mb-3">
+              Contact our support team for assistance.
+            </p>
             <Dialog>
               <DialogTrigger asChild>
                 <Button className="w-full bg-white text-blue-900 hover:bg-blue-100">
@@ -118,16 +140,16 @@ const Sidebar = () => {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <Button 
-                    className="flex items-center justify-center gap-2" 
+                  <Button
+                    className="flex items-center justify-center gap-2"
                     onClick={handleEmailSupport}
                   >
                     <Mail className="mr-2 h-4 w-4" />
                     Email Support
                   </Button>
-                  <Button 
+                  <Button
                     className="flex items-center justify-center gap-2"
-                    onClick={() => window.location.href = 'tel:+1234567890'} // Replace with actual support phone number
+                    onClick={() => (window.location.href = "tel:+1234567890")} // Replace with actual support phone number
                   >
                     <Phone className="mr-2 h-4 w-4" />
                     Call Support
