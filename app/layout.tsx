@@ -24,7 +24,6 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  console.log('');
   return (
     <html lang="en" className={GeistSans.className} suppressHydrationWarning>
       <body className="bg-background text-foreground">

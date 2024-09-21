@@ -1,5 +1,4 @@
 import eslintPluginPrettier from 'eslint-plugin-prettier';
-import eslintConfigPrettier from 'eslint-config-prettier';
 import eslintPluginTypescript from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
 
@@ -20,10 +19,6 @@ export default [
     },
     rules: {
       'prettier/prettier': 'error', // Enforce Prettier rules
-      // '@typescript-eslint/no-unused-vars': [
-      //   'error',
-      //   { argsIgnorePattern: '^_' },
-      // ], // Handle unused variables
     },
   },
 ];
