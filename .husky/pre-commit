@@ -1,5 +1,5 @@
 # Run Prettier to format only staged files
-npm run format:staged
+npx lint-staged
 
 # Re-add files that were modified by Prettier
 git add .
