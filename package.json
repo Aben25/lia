@@ -7,7 +7,19 @@
     "prepare": "husky",
     "format": "npm run format:staged",
     "format:staged": "prettier --write $(git diff --cached --name-only --diff-filter=ACM | grep -E '\\.(ts|tsx|js|jsx|json|css|scss|md)$')",
-    "format:changed": "prettier --write $(git diff --name-only main | grep -E '\\.(ts|tsx|js|jsx|json|css|scss|md)$')"
+    "format:changed": "prettier --write $(git diff --name-only main | grep -E '\\.(ts|tsx|js|jsx|json|css|scss|md)$')",
+    "format:repo": "prettier --write '**/*.{js,jsx,ts,tsx,json,css,scss,md}'"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write",
+      "git add"
+    ],
+    "*.{json,css,scss,md}": [
+      "prettier --write",
+      "git add"
+    ]
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.0",
@@ -42,7 +54,13 @@
     "@types/node": "20.10.6",
     "@types/react": "18.2.46",
     "@types/react-dom": "18.2.18",
+    "@typescript-eslint/eslint-plugin": "^8.6.0",
+    "@typescript-eslint/parser": "^8.6.0",
+    "eslint": "^9.11.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
     "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
     "postcss": "8.4.33",
     "prettier": "^3.3.3",
     "tailwind-merge": "^2.5.2",

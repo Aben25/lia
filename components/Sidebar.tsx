@@ -75,10 +75,6 @@ const Sidebar = () => {
       'mailto:info@loveinaction.co?subject=Support Request';
   };
 
-  if (pathname === '/sign-in') {
-    return null; // Don't render the sidebar if the user is not logged in
-  }
-
   return (
     <>
       {/* Mobile menu button */}
@@ -92,7 +88,7 @@ const Sidebar = () => {
       {/* Sidebar */}
       <div
         className={cn(
-          'bg-blue-900 text-white w-64 space-y-6 py-7 px-2 fixed h-full z-10 transition-all duration-300 ease-in-out',
+          'bg-blue-900 text-white w-64 space-y-6 py-7 px-2 fixed top-0 h-full z-10 transition-all duration-300 ease-in-out',
           isOpen ? 'left-0' : '-left-64',
           'lg:left-0' // Always visible on large screens
         )}
