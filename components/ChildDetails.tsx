@@ -1,14 +1,14 @@
 import React from 'react';
 import { User, MapPin, Calendar, BookOpen } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface ChildDetailsProps {
   child: {
     id: string;
-    "First Name": string;
-    "Last Name": string;
+    'First Name': string;
+    'Last Name': string;
     aspiration: string | null;
     bio: string;
     gender: string;
@@ -16,7 +16,7 @@ interface ChildDetailsProps {
     bod: string;
     grade: string;
     profile: string;
-  }
+  };
 }
 
 export default function ChildDetails({ child }: ChildDetailsProps) {
@@ -32,30 +32,37 @@ export default function ChildDetails({ child }: ChildDetailsProps) {
   };
 
   const age = child.bod ? getAge(child.bod) : null;
-  
+
   const getInitials = (name: string) => name.charAt(0).toUpperCase();
-  const fallbackInitials = `${getInitials(child["First Name"] || '')}${getInitials(child["Last Name"] || '')}`;
+  const fallbackInitials = `${getInitials(child['First Name'] || '')}${getInitials(child['Last Name'] || '')}`;
 
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-xl sm:text-2xl font-bold text-gray-800">
-          {child["First Name"] || ''} {child["Last Name"] || ''}
+          {child['First Name'] || ''} {child['Last Name'] || ''}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col sm:flex-row items-center sm:items-start">
           <div className="flex-shrink-0 mb-4 sm:mb-0 sm:mr-6">
             <Avatar className="w-32 h-32 sm:w-40 sm:h-40">
-              <AvatarImage src={child.profile} alt={`${child["First Name"] || ''} ${child["Last Name"] || ''}`} />
+              <AvatarImage
+                src={child.profile}
+                alt={`${child['First Name'] || ''} ${child['Last Name'] || ''}`}
+              />
               <AvatarFallback>{fallbackInitials || 'N/A'}</AvatarFallback>
             </Avatar>
           </div>
           <div className="flex flex-col w-full sm:w-auto">
             <p className="text-sm text-gray-600 mb-2 text-center sm:text-left">
-              {child.aspiration ? `Aspires to be a ${child.aspiration}` : "Aspiration not provided"}
+              {child.aspiration
+                ? `Aspires to be a ${child.aspiration}`
+                : 'Aspiration not provided'}
             </p>
-            <p className="text-gray-700 text-sm mb-4 text-center sm:text-left">{child.bio || 'No bio available'}</p>
+            <p className="text-gray-700 text-sm mb-4 text-center sm:text-left">
+              {child.bio || 'No bio available'}
+            </p>
             <div className="flex flex-wrap justify-center sm:justify-start gap-2">
               {child.gender && (
                 <Badge variant="secondary" className="flex items-center">
