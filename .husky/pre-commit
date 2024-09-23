@@ -1,5 +1,2 @@
-# Run Prettier to format only staged files
-npm run format:staged
-
-# Re-add files that were modified by Prettier
-git add .
+# Run ESLint and Prettier to lint and format staged files, then re-stage them
+npx lint-staged
