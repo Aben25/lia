@@ -1,13 +1,29 @@
+'use client';
+
 import { signInAction } from '@/app/actions';
-import { FormMessage, Message } from '@/components/form-message';
+import { FormMessage } from '@/components/form-message';
 import { SubmitButton } from '@/components/submit-button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function Login({ searchParams }: { searchParams: Message }) {
+export default function Login() {
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleSubmit = async (formData: FormData) => {
+    const result = await signInAction(formData);
+    if ('error' in result) {
+      setError(result.error);
+    } else {
+      router.push('/protected');
+    }
+  };
+
   return (
-    <form className="flex-1 flex flex-col w-full sm:max-w-xs mx-0">
+    <form className="flex-1 flex flex-col w-full sm:max-w-xs mx-0" action={handleSubmit}>
       <h1 className="text-2xl font-medium text-center">Sign in</h1>
       <p className="text-sm text-foreground text-center">
         Don't have an account?{' '}
@@ -36,11 +52,10 @@ export default function Login({ searchParams }: { searchParams: Message }) {
         <SubmitButton
           className="text-base h-14 sm:h-11 mt-2"
           pendingText="Signing In..."
-          formAction={signInAction}
         >
           Sign in
         </SubmitButton>
-        <FormMessage message={searchParams} />
+        {error && <FormMessage message={{ type: 'error', message: error }} />}
       </div>
     </form>
   );

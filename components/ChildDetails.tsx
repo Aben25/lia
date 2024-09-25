@@ -3,6 +3,8 @@ import { User, MapPin, Calendar, BookOpen } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 interface ChildDetailsProps {
   child: {
@@ -32,6 +34,7 @@ export default function ChildDetails({ child }: ChildDetailsProps) {
   };
 
   const age = child.bod ? getAge(child.bod) : null;
+  console.log(child);
 
   const getInitials = (name: string) => name.charAt(0).toUpperCase();
   const fallbackInitials = `${getInitials(child['First Name'] || '')}${getInitials(child['Last Name'] || '')}`;
@@ -53,8 +56,14 @@ export default function ChildDetails({ child }: ChildDetailsProps) {
               />
               <AvatarFallback>{fallbackInitials || 'N/A'}</AvatarFallback>
             </Avatar>
+            <Link href={`/protected/gallery/${child.id}`}>
+              <Button variant="outline" className="mt-2">
+                View Gallery
+              </Button>
+            </Link>
           </div>
           <div className="flex flex-col w-full sm:w-auto">
+            
             <p className="text-sm text-gray-600 mb-2 text-center sm:text-left">
               {child.aspiration
                 ? `Aspires to be a ${child.aspiration}`
