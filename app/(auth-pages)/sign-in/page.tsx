@@ -55,7 +55,7 @@ export default function Login() {
         >
           Sign in
         </SubmitButton>
-        {error && <FormMessage message={{ type: 'error', message: error }} />}
+        {error && <FormMessage message={{ error: error }} />}
       </div>
     </form>
   );
