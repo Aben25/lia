@@ -4,8 +4,15 @@ import { encodedRedirect } from '@/utils/utils';
 import { createClient } from '@/utils/supabase/server';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { AuthOtpResponse } from '@supabase/supabase-js';
-import { data } from 'autoprefixer';
+
+export interface SendOtpResponse {
+  messageId: string;
+  error: {
+    message: string;
+    status: number;
+    code: string;
+  } | null;
+}
 
 export const signUpAction = async (formData: FormData) => {
   const email = formData.get('email')?.toString();
@@ -126,7 +133,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   encodedRedirect('success', '/protected/reset-password', 'Password updated');
 };
 
-export const sendOtp = async (formData: FormData): Promise<string | null> => {
+export const sendOtp = async (formData: FormData): Promise<SendOtpResponse> => {
   const phone = formData.get('phone') as string;
   const supabase = createClient();
 
@@ -134,7 +141,18 @@ export const sendOtp = async (formData: FormData): Promise<string | null> => {
     .signInWithOtp({
       phone,
     })
-    .then(({ data }) => data.session);
+    .then(({ data, error }) => {
+      return {
+        messageId: data.messageId ?? '',
+        error: error
+          ? {
+              message: error.message,
+              status: error.status ?? 0,
+              code: error.code ?? '',
+            }
+          : null,
+      };
+    });
 };
 
 export const verifyOtp = async (formData: FormData) => {
@@ -142,10 +160,7 @@ export const verifyOtp = async (formData: FormData) => {
   const token = formData.get('otp') as string;
   const supabase = createClient();
 
-  const {
-    data: { session },
-    error,
-  } = await supabase.auth.verifyOtp({
+  const { data, error } = await supabase.auth.verifyOtp({
     phone,
     token,
     type: 'sms',

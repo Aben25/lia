@@ -33,6 +33,7 @@ export default function Login({ searchParams }: { searchParams: Message }) {
       </p>
       {loginType === 'email' ? <EmailLogin /> : <PhoneLogin />}
       <Button
+        className="text-base h-14 sm:h-11 mt-2"
         variant="outline"
         type="button"
         onClick={() => setLoginType(toggleLoginType())}
