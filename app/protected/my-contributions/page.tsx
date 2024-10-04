@@ -1,9 +1,25 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
 import { createClient } from '@/utils/supabase/client';
 import { InfoIcon } from 'lucide-react';
 
@@ -25,7 +41,9 @@ const MyContributions = () => {
     const fetchContributions = async () => {
       try {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
         if (user) {
           const { data, error } = await supabase
@@ -36,12 +54,22 @@ const MyContributions = () => {
           if (error) throw error;
 
           setContributions(data as Contribution[]);
-          const total = data.reduce((sum: number, contribution: Contribution) => sum + contribution.Amount, 0);
+          const total = data.reduce(
+            (sum: number, contribution: Contribution) =>
+              sum + contribution.Amount,
+            0
+          );
           setTotalAmount(total);
-          setLargestDonation(Math.max(...data.map((c: Contribution) => c.Amount)));
+          setLargestDonation(
+            Math.max(...data.map((c: Contribution) => c.Amount))
+          );
           setContactSince(
             new Date(
-              Math.min(...data.map((c: Contribution) => new Date(c['First payment date (America/New_York)']).getTime()))
+              Math.min(
+                ...data.map((c: Contribution) =>
+                  new Date(c['First payment date (America/New_York)']).getTime()
+                )
+              )
             ).toLocaleString('default', { month: 'long', year: 'numeric' })
           );
         }
@@ -68,7 +96,9 @@ const MyContributions = () => {
             <CardTitle>ALL-TIME DONATIONS</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-green-500">${totalAmount.toFixed(2)}</p>
+            <p className="text-3xl font-bold text-green-500">
+              ${totalAmount.toFixed(2)}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -83,7 +113,7 @@ const MyContributions = () => {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center">
-              CONTACT TYPE 
+              CONTACT TYPE
               <InfoIcon className="ml-2 h-4 w-4" />
             </CardTitle>
           </CardHeader>
@@ -126,7 +156,11 @@ const MyContributions = () => {
             <TableBody>
               {contributions.map((contribution, index) => (
                 <TableRow key={index}>
-                  <TableCell>{new Date(contribution['First payment date (America/New_York)']).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    {new Date(
+                      contribution['First payment date (America/New_York)']
+                    ).toLocaleDateString()}
+                  </TableCell>
                   <TableCell>${contribution.Amount.toFixed(2)}</TableCell>
                 </TableRow>
               ))}

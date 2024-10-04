@@ -1,39 +1,45 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { createClient } from '@/utils/supabase/client';
 import { User, Mail, Phone, MapPin } from 'lucide-react';
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from '@/components/ui/use-toast';
 
 interface SponsorData {
-  "First name": string;
-  "Last name": string;
-  "Email": string;
-  "Phone": string;
-  "Address": string;
-  "Postal code": string;
-  "City": string;
-  "Region": string;
-  "Country": string;
+  'First name': string;
+  'Last name': string;
+  Email: string;
+  Phone: string;
+  Address: string;
+  'Postal code': string;
+  City: string;
+  Region: string;
+  Country: string;
 }
 
 const ProfilePage = () => {
   const { toast } = useToast();
   const [sponsor, setSponsor] = useState<SponsorData>({
-    "First name": '',
-    "Last name": '',
-    "Email": '',
-    "Phone": '',
-    "Address": '',
-    "Postal code": '',
-    "City": '',
-    "Region": '',
-    "Country": ''
+    'First name': '',
+    'Last name': '',
+    Email: '',
+    Phone: '',
+    Address: '',
+    'Postal code': '',
+    City: '',
+    Region: '',
+    Country: '',
   });
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -43,7 +49,9 @@ const ProfilePage = () => {
     const fetchSponsorData = async () => {
       try {
         const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
 
         if (user) {
           const { data, error } = await supabase
@@ -59,9 +67,9 @@ const ProfilePage = () => {
       } catch (err) {
         setError('Failed to fetch sponsor data');
         toast({
-          title: "Error",
-          description: "Failed to fetch sponsor data",
-          variant: "destructive",
+          title: 'Error',
+          description: 'Failed to fetch sponsor data',
+          variant: 'destructive',
         });
       } finally {
         setLoading(false);
@@ -73,11 +81,11 @@ const ProfilePage = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setSponsor(prev => ({ ...prev, [name]: value }));
+    setSponsor((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSelectChange = (name: string, value: string) => {
-    setSponsor(prev => ({ ...prev, [name]: value }));
+    setSponsor((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -93,15 +101,15 @@ const ProfilePage = () => {
 
       setIsEditing(false);
       toast({
-        title: "Success",
-        description: "Your profile has been updated",
+        title: 'Success',
+        description: 'Your profile has been updated',
       });
     } catch (err) {
       setError('Failed to update sponsor data');
       toast({
-        title: "Error",
-        description: "Failed to update sponsor data",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update sponsor data',
+        variant: 'destructive',
       });
     }
   };
@@ -127,7 +135,7 @@ const ProfilePage = () => {
                   <Input
                     id="firstName"
                     name="First name"
-                    value={sponsor["First name"]}
+                    value={sponsor['First name']}
                     onChange={handleInputChange}
                     disabled={!isEditing}
                   />
@@ -140,7 +148,7 @@ const ProfilePage = () => {
                   <Input
                     id="lastName"
                     name="Last name"
-                    value={sponsor["Last name"]}
+                    value={sponsor['Last name']}
                     onChange={handleInputChange}
                     disabled={!isEditing}
                   />
@@ -191,7 +199,7 @@ const ProfilePage = () => {
                   <Input
                     id="postalCode"
                     name="Postal code"
-                    value={sponsor["Postal code"]}
+                    value={sponsor['Postal code']}
                     onChange={handleInputChange}
                     disabled={!isEditing}
                   />
@@ -214,14 +222,18 @@ const ProfilePage = () => {
                   <Label htmlFor="region">Region</Label>
                   <Select
                     disabled={!isEditing}
-                    onValueChange={(value) => handleSelectChange("Region", value)}
+                    onValueChange={(value) =>
+                      handleSelectChange('Region', value)
+                    }
                     value={sponsor.Region}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select region" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Maryland (MD)">Maryland (MD)</SelectItem>
+                      <SelectItem value="Maryland (MD)">
+                        Maryland (MD)
+                      </SelectItem>
                       {/* Add other regions as needed */}
                     </SelectContent>
                   </Select>
@@ -232,14 +244,18 @@ const ProfilePage = () => {
                   <Label htmlFor="country">Country</Label>
                   <Select
                     disabled={!isEditing}
-                    onValueChange={(value) => handleSelectChange("Country", value)}
+                    onValueChange={(value) =>
+                      handleSelectChange('Country', value)
+                    }
                     value={sponsor.Country}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select country" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="United States (US)">United States (US)</SelectItem>
+                      <SelectItem value="United States (US)">
+                        United States (US)
+                      </SelectItem>
                       {/* Add other countries as needed */}
                     </SelectContent>
                   </Select>
@@ -250,10 +266,18 @@ const ProfilePage = () => {
               {isEditing ? (
                 <>
                   <Button type="submit">Save Changes</Button>
-                  <Button type="button" variant="outline" onClick={() => setIsEditing(false)}>Cancel</Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsEditing(false)}
+                  >
+                    Cancel
+                  </Button>
                 </>
               ) : (
-                <Button type="button" onClick={() => setIsEditing(true)}>Edit Profile</Button>
+                <Button type="button" onClick={() => setIsEditing(true)}>
+                  Edit Profile
+                </Button>
               )}
             </div>
           </form>

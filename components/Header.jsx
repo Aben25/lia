@@ -1,8 +1,8 @@
 import React from 'react';
-import { ThemeSwitcher } from "@/components/theme-switcher";
-import { EnvVarWarning } from "@/components/env-var-warning";
-import HeaderAuth from "@/components/header-auth";
-import { hasEnvVars } from "@/utils/supabase/check-env-vars";
+import { ThemeSwitcher } from '@/components/theme-switcher';
+import { EnvVarWarning } from '@/components/env-var-warning';
+import HeaderAuth from '@/components/header-auth';
+import { hasEnvVars } from '@/utils/supabase/check-env-vars';
 import { Bell, User } from 'lucide-react';
 import {
   DropdownMenu,
@@ -11,7 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 
 export default function Header() {
   return (
@@ -25,7 +25,7 @@ export default function Header() {
           <button className="p-2 rounded-full hover:bg-accent transition-colors">
             <Bell size={20} />
           </button>
-          
+
           {!hasEnvVars ? (
             <EnvVarWarning />
           ) : (

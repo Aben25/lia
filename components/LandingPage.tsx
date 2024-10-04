@@ -1,6 +1,6 @@
-'use client'
+'use client';
 
-import Link from "next/link"
+import Link from 'next/link';
 
 export default function LandingPage() {
   return (
@@ -9,5 +9,5 @@ export default function LandingPage() {
       <Link href="/sign-in">Sign In</Link>
       <Link href="/sign-up">Sign Up</Link>
     </div>
-  )
+  );
 }
