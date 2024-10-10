@@ -47,7 +47,8 @@ export default async function ProtectedPage() {
         last_update,
         Gender,
         profile_picture_id,
-        gallery_id
+        gallery_id,
+        bio
       )
     `
     )
@@ -66,27 +67,28 @@ export default async function ProtectedPage() {
   const sponseesList = await Promise.all(
     sponsees?.map(async (rel) => {
       const sponsee = rel.sponsees;
-      console.log('Sponsee before fetching media:', sponsee); // Add this line
 
       if (sponsee.profile_picture_id) {
         const { data: mediaData, error: mediaError } = await supabase
           .from('media')
-          .select('url, filename')
+          .select('filename')
           .eq('id', sponsee.profile_picture_id)
           .single();
 
         if (mediaError) {
           console.error('Error fetching profile picture:', mediaError);
         } else {
-          sponsee.profile_picture_url = mediaData?.url;
-          sponsee.profile_picture_filename = mediaData?.filename;
-          console.log('Fetched media data:', mediaData);
+          const filename = mediaData?.filename;
+          if (filename) {
+            // Construct the URL using the filename
+            const profilePictureUrl = `https://ntckmekstkqxqgigqzgn.supabase.co/storage/v1/object/public/Media/media/${encodeURIComponent(filename)}`;
+            sponsee.profile_picture_url = profilePictureUrl;
+            sponsee.profile_picture_filename = filename;
+          }
         }
       } else {
         console.log('No profile_picture_id for sponsee:', sponsee.id);
       }
-
-      console.log('Sponsee after fetching media:', sponsee); // Add this line
       return sponsee;
     }) || []
   );

@@ -6,21 +6,29 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
+interface ProfilePicture {
+  url: string;
+  filename: string;
+}
+
+interface Child {
+  id: number;
+  full_name: string;
+  location: string;
+  date_of_birth: string;
+  academic_progress: string;
+  milestones: string;
+  contributions_used_for: string;
+  gender: string;
+  profile_picture_id: number;
+  gallery_id: number;
+  profile_picture?: ProfilePicture;
+  bio: string;
+  profile_picture_url?: string; // Ensure this is included
+}
+
 interface ChildDetailsProps {
-  child: {
-    id: number;
-    full_name: string;
-    location: string;
-    date_of_birth: string;
-    academic_progress: string;
-    milestones: string;
-    contributions_used_for: string;
-    Gender: string;
-    profile_picture_id: number;
-    gallery_id: number;
-    profile_picture_filename: string;
-    profile_picture_url: string; // Added this property
-  };
+  child: Child;
 }
 
 export default function ChildDetails({ child }: ChildDetailsProps) {
@@ -44,15 +52,7 @@ export default function ChildDetails({ child }: ChildDetailsProps) {
       .join('');
   const fallbackInitials = getInitials(child.full_name);
 
-  console.log('Child data in ChildDetails:', JSON.stringify(child, null, 2));
-
-  const profileImageUrl =
-    child.profile_picture_url ||
-    (child.profile_picture_filename
-      ? `https://ntckmekstkqxqgigqzgn.supabase.co/storage/v1/object/public/Media/${child.profile_picture_filename}`
-      : null);
-
-  console.log('Constructed Profile Image URL:', profileImageUrl);
+  const profileImageUrl = child.profile_picture_url || null;
 
   return (
     <Card className="w-full">
@@ -71,18 +71,13 @@ export default function ChildDetails({ child }: ChildDetailsProps) {
                 <AvatarFallback>{fallbackInitials || 'N/A'}</AvatarFallback>
               )}
             </Avatar>
-            {/* Display debugging information */}
-            <p className="mt-2 text-xs text-gray-500 break-all">
-              Image URL: {profileImageUrl || 'Not available'}
-            </p>
-            <p className="mt-1 text-xs text-gray-500">
-              Filename: {child.profile_picture_filename || 'Not available'}
-            </p>
-            <Link href={`/protected/gallery/${child.gallery_id}`}>
-              <Button variant="outline" className="mt-2">
-                View Gallery
-              </Button>
-            </Link>
+            {child.gallery_id && (
+              <Link href={`/protected/gallery/${child.gallery_id}`}>
+                <Button variant="outline" className="mt-2">
+                  View Gallery
+                </Button>
+              </Link>
+            )}
           </div>
           <div className="flex flex-col w-full sm:w-auto">
             <p className="text-sm text-gray-600 mb-2 text-center sm:text-left">
@@ -90,12 +85,12 @@ export default function ChildDetails({ child }: ChildDetailsProps) {
                 'Contributions usage not specified'}
             </p>
             <p className="text-gray-700 text-sm mb-4 text-center sm:text-left">
-              {child.milestones || 'No milestones available'}
+              {child.bio || 'No milestones available'}
             </p>
             <div className="flex flex-wrap justify-center sm:justify-start gap-2">
-              {child.Gender && (
+              {child.gender && (
                 <Badge variant="secondary" className="flex items-center">
-                  <User size={16} className="mr-1" /> {child.Gender}
+                  <User size={16} className="mr-1" /> {child.gender}
                 </Badge>
               )}
               {child.location && (
