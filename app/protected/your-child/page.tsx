@@ -86,8 +86,8 @@ export default async function ProtectedPage() {
           if (filename) {
             // Construct the URL using the filename
             const profilePictureUrl = `https://ntckmekstkqxqgigqzgn.supabase.co/storage/v1/object/public/Media/media/${encodeURIComponent(filename)}`;
-            sponsee[0].profile_picture_url = profilePictureUrl;
-            sponsee[0].profile_picture_filename = filename;
+            sponsee[0].profile_picture_id = profilePictureUrl;
+            (sponsee[0] as any).profile_picture_filename = filename;
           }
         }
       } else {
@@ -107,7 +107,10 @@ export default async function ProtectedPage() {
       <div className="flex flex-col gap-4">
         {sponseesList.length > 0 ? (
           sponseesList.map((child) => (
-            <ChildDetails key={child.id} child={child} />
+            <ChildDetails
+              key={child.id}
+              child={{ ...child, gender: child.Gender || 'Unknown' }}
+            />
           ))
         ) : (
           <p>No sponsored children found.</p>
