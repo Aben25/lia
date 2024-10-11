@@ -91,9 +91,9 @@ export default async function ProtectedPage() {
           }
         }
       } else {
-        console.log('No profile_picture_id for sponsee:', sponsee.id);
+        console.log('No profile_picture_id for sponsee:', sponsee[0]?.id);
       }
-      return sponsee;
+      return sponsee[0]; // Return the first (and presumably only) sponsee
     }) || []
   );
 
