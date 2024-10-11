@@ -68,11 +68,15 @@ export default async function ProtectedPage() {
     sponsees?.map(async (rel) => {
       const sponsee = rel.sponsees;
 
-      if (sponsee.profile_picture_id) {
+      if (
+        Array.isArray(sponsee) &&
+        sponsee.length > 0 &&
+        'profile_picture_id' in sponsee[0]
+      ) {
         const { data: mediaData, error: mediaError } = await supabase
           .from('media')
           .select('filename')
-          .eq('id', sponsee.profile_picture_id)
+          .eq('id', sponsee[0].profile_picture_id)
           .single();
 
         if (mediaError) {
@@ -82,8 +86,8 @@ export default async function ProtectedPage() {
           if (filename) {
             // Construct the URL using the filename
             const profilePictureUrl = `https://ntckmekstkqxqgigqzgn.supabase.co/storage/v1/object/public/Media/media/${encodeURIComponent(filename)}`;
-            sponsee.profile_picture_url = profilePictureUrl;
-            sponsee.profile_picture_filename = filename;
+            sponsee[0].profile_picture_url = profilePictureUrl;
+            sponsee[0].profile_picture_filename = filename;
           }
         }
       } else {
