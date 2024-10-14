@@ -10,35 +10,25 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from 'recharts';
 import { createClient } from '@/utils/supabase/client';
 import { InfoIcon } from 'lucide-react';
 
-// Define a type for your contributions
-interface Contribution {
-  Amount: number;
-  'First payment date (America/New_York)': string;
+// Define a type for your sponsor
+interface Sponsor {
+  amount: number | null;
+  first_payment_date: string | null;
+  last_payment_date: string | null;
 }
 
 const MyContributions = () => {
-  const [contributions, setContributions] = useState<Contribution[]>([]);
+  const [contributions, setContributions] = useState<Sponsor[]>([]);
   const [totalAmount, setTotalAmount] = useState(0);
-  const [largestDonation, setLargestDonation] = useState(0);
   const [contactSince, setContactSince] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchContributions = async () => {
+    const fetchSponsorData = async () => {
       try {
         const supabase = createClient();
         const {
@@ -47,44 +37,42 @@ const MyContributions = () => {
 
         if (user) {
           const { data, error } = await supabase
-            .from('Sponsors')
+            .from('sponsors')
             .select('*')
-            .eq('Email', user.email);
+            .eq('email', user.email)
+            .single();
 
           if (error) throw error;
 
-          setContributions(data as Contribution[]);
-          const total = data.reduce(
-            (sum: number, contribution: Contribution) =>
-              sum + contribution.Amount,
-            0
-          );
-          setTotalAmount(total);
-          setLargestDonation(
-            Math.max(...data.map((c: Contribution) => c.Amount))
-          );
-          setContactSince(
-            new Date(
-              Math.min(
-                ...data.map((c: Contribution) =>
-                  new Date(c['First payment date (America/New_York)']).getTime()
-                )
-              )
-            ).toLocaleString('default', { month: 'long', year: 'numeric' })
-          );
+          const sponsor = data as Sponsor;
+
+          const totalAmount = sponsor.amount || 0;
+          const contactSince = sponsor.first_payment_date
+            ? new Date(sponsor.first_payment_date).toLocaleString('default', {
+                month: 'long',
+                year: 'numeric',
+              })
+            : 'Unknown';
+
+          setContributions([sponsor]);
+          setTotalAmount(totalAmount);
+          setContactSince(contactSince);
         }
       } catch (err) {
-        setError('Failed to fetch contributions');
+        console.error('Error fetching sponsor data:', err);
+        setError('Failed to fetch sponsor data');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchContributions();
+    fetchSponsorData();
   }, []);
 
   if (loading) return <div>Loading...</div>;
   if (error) return <div>Error: {error}</div>;
+
+  const sponsor = contributions[0];
 
   return (
     <div className="container mx-auto p-4">
@@ -118,32 +106,15 @@ const MyContributions = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-blue-500">Monthly donor</p>
+            <p className="text-3xl font-bold text-blue-500">Monthly Donor</p>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Monthly Contributions</CardTitle>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={contributions}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="First payment date (America/New_York)" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="Amount" fill="#3b82f6" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
+      {/* Since we have only one record, you might choose to display the info differently */}
       <Card>
         <CardHeader>
-          <CardTitle>Payments</CardTitle>
+          <CardTitle>Last Payment</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -154,16 +125,16 @@ const MyContributions = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {contributions.map((contribution, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    {new Date(
-                      contribution['First payment date (America/New_York)']
-                    ).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>${contribution.Amount.toFixed(2)}</TableCell>
-                </TableRow>
-              ))}
+              <TableRow>
+                <TableCell>
+                  {sponsor.last_payment_date
+                    ? new Date(sponsor.last_payment_date).toLocaleDateString()
+                    : 'Unknown'}
+                </TableCell>
+                <TableCell>
+                  ${sponsor.amount ? sponsor.amount.toFixed(2) : '0.00'}
+                </TableCell>
+              </TableRow>
             </TableBody>
           </Table>
         </CardContent>

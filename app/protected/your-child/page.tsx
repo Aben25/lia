@@ -13,7 +13,7 @@ export default async function ProtectedPage() {
     return redirect('/sign-in');
   }
 
-  // Select current logged-in sponsor data from the sponsors table using email
+  // Fetch sponsor data
   const { data: sponsor, error: sponsorError } = await supabase
     .from('sponsors')
     .select('id')
@@ -28,11 +28,12 @@ export default async function ProtectedPage() {
     );
   }
 
-  // Select sponsees data through the sponsors_rels table
-  const { data: sponsees, error: sponseesError } = await supabase
+  // Fetch sponsees data
+  const { data: sponseesRelData, error: sponseesError } = await supabase
     .from('sponsors_rels')
     .select(
       `
+      sponsees_id,
       sponsees (
         id,
         full_name,
@@ -47,7 +48,6 @@ export default async function ProtectedPage() {
         last_update,
         Gender,
         profile_picture_id,
-        gallery_id,
         bio
       )
     `
@@ -63,42 +63,63 @@ export default async function ProtectedPage() {
     );
   }
 
-  // Fetch profile picture data for sponsees
-  const sponseesList = await Promise.all(
-    sponsees?.map(async (rel) => {
-      const sponsee = rel.sponsees;
+  const sponseesList = sponseesRelData?.map((rel) => rel.sponsees) || [];
 
-      if (
-        Array.isArray(sponsee) &&
-        sponsee.length > 0 &&
-        'profile_picture_id' in sponsee[0]
-      ) {
-        const { data: mediaData, error: mediaError } = await supabase
-          .from('media')
-          .select('filename')
-          .eq('id', sponsee[0].profile_picture_id)
-          .single();
+  // Collect all profile_picture_ids
+  const profilePictureIds = sponseesList
+    .map((sponsee) => sponsee.profile_picture_id)
+    .filter((id) => id !== null && id !== undefined);
 
-        if (mediaError) {
-          console.error('Error fetching profile picture:', mediaError);
-        } else {
-          const filename = mediaData?.filename;
-          if (filename) {
-            // Construct the URL using the filename
-            const profilePictureUrl = `https://ntckmekstkqxqgigqzgn.supabase.co/storage/v1/object/public/Media/media/${encodeURIComponent(filename)}`;
-            sponsee[0].profile_picture_id = profilePictureUrl;
-            (sponsee[0] as any).profile_picture_filename = filename;
-          }
-        }
-      } else {
-        console.log('No profile_picture_id for sponsee:', sponsee[0]?.id);
-      }
-      return sponsee[0]; // Return the first (and presumably only) sponsee
-    }) || []
-  );
+  // Fetch media data for all profile_picture_ids
+  let mediaMap = {};
+  if (profilePictureIds.length > 0) {
+    const { data: mediaData, error: mediaError } = await supabase
+      .from('media')
+      .select('id, filename')
+      .in('id', profilePictureIds);
 
-  // Log the processed sponsees list
-  console.log('Processed sponseesList:', JSON.stringify(sponseesList, null, 2));
+    if (mediaError) {
+      console.error('Error fetching media data:', mediaError);
+    } else {
+      mediaMap = mediaData.reduce((acc, media) => {
+        acc[media.id] = media.filename;
+        return acc;
+      }, {});
+    }
+  }
+
+  // Attach profile_picture_url to each sponsee
+  sponseesList.forEach((sponsee) => {
+    const filename = mediaMap[sponsee.profile_picture_id];
+    if (filename) {
+      sponsee.profile_picture_url = `https://ntckmekstkqxqgigqzgn.supabase.co/storage/v1/object/public/Media/media/${encodeURIComponent(
+        filename
+      )}`;
+    }
+  });
+
+  // Fetch galleries for the sponsees
+  const sponseeIds = sponseesList.map((sponsee) => sponsee.id);
+
+  const { data: galleriesData, error: galleriesError } = await supabase
+    .from('gallery')
+    .select('id, sponsee_id')
+    .in('sponsee_id', sponseeIds);
+
+  if (galleriesError) {
+    console.error('Error fetching galleries:', galleriesError);
+  }
+
+  // Build a map from sponsee_id to gallery id
+  const galleryMap = galleriesData.reduce((acc, gallery) => {
+    acc[gallery.sponsee_id] = gallery.id;
+    return acc;
+  }, {});
+
+  // Attach gallery_id to each sponsee
+  sponseesList.forEach((sponsee) => {
+    sponsee.gallery_id = galleryMap[sponsee.id];
+  });
 
   return (
     <div className="flex-1 w-full flex flex-col gap-12 p-8">

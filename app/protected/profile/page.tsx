@@ -17,29 +17,29 @@ import { User, Mail, Phone, MapPin } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 interface SponsorData {
-  'First name': string;
-  'Last name': string;
-  Email: string;
-  Phone: string;
-  Address: string;
-  'Postal code': string;
-  City: string;
-  Region: string;
-  Country: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  address: string | null;
+  postal_code: string | null;
+  city: string | null;
+  region: string | null;
+  country: string | null;
 }
 
 const ProfilePage = () => {
   const { toast } = useToast();
   const [sponsor, setSponsor] = useState<SponsorData>({
-    'First name': '',
-    'Last name': '',
-    Email: '',
-    Phone: '',
-    Address: '',
-    'Postal code': '',
-    City: '',
-    Region: '',
-    Country: '',
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone: '',
+    address: '',
+    postal_code: '',
+    city: '',
+    region: '',
+    country: '',
   });
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -55,9 +55,9 @@ const ProfilePage = () => {
 
         if (user) {
           const { data, error } = await supabase
-            .from('Sponsors')
+            .from('sponsors')
             .select('*')
-            .eq('Email', user.email)
+            .eq('email', user.email)
             .single();
 
           if (error) throw error;
@@ -93,9 +93,18 @@ const ProfilePage = () => {
     try {
       const supabase = createClient();
       const { error } = await supabase
-        .from('Sponsors')
-        .update(sponsor)
-        .eq('Email', sponsor.Email);
+        .from('sponsors')
+        .update({
+          first_name: sponsor.first_name,
+          last_name: sponsor.last_name,
+          phone: sponsor.phone,
+          address: sponsor.address,
+          postal_code: sponsor.postal_code,
+          city: sponsor.city,
+          region: sponsor.region,
+          country: sponsor.country,
+        })
+        .eq('email', sponsor.email);
 
       if (error) throw error;
 
@@ -105,6 +114,7 @@ const ProfilePage = () => {
         description: 'Your profile has been updated',
       });
     } catch (err) {
+      console.error('Failed to update sponsor data:', err);
       setError('Failed to update sponsor data');
       toast({
         title: 'Error',
@@ -134,8 +144,8 @@ const ProfilePage = () => {
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
                     id="firstName"
-                    name="First name"
-                    value={sponsor['First name']}
+                    name="first_name"
+                    value={sponsor.first_name}
                     onChange={handleInputChange}
                     disabled={!isEditing}
                   />
@@ -147,8 +157,8 @@ const ProfilePage = () => {
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input
                     id="lastName"
-                    name="Last name"
-                    value={sponsor['Last name']}
+                    name="last_name"
+                    value={sponsor.last_name}
                     onChange={handleInputChange}
                     disabled={!isEditing}
                   />
@@ -160,8 +170,8 @@ const ProfilePage = () => {
                   <Label htmlFor="email">Email</Label>
                   <Input
                     id="email"
-                    name="Email"
-                    value={sponsor.Email}
+                    name="email"
+                    value={sponsor.email}
                     onChange={handleInputChange}
                     disabled={true} // Email should not be editable
                   />
@@ -173,8 +183,8 @@ const ProfilePage = () => {
                   <Label htmlFor="phone">Phone</Label>
                   <Input
                     id="phone"
-                    name="Phone"
-                    value={sponsor.Phone}
+                    name="phone"
+                    value={sponsor.phone || ''}
                     onChange={handleInputChange}
                     disabled={!isEditing}
                   />
@@ -186,8 +196,8 @@ const ProfilePage = () => {
                   <Label htmlFor="address">Address</Label>
                   <Input
                     id="address"
-                    name="Address"
-                    value={sponsor.Address}
+                    name="address"
+                    value={sponsor.address || ''}
                     onChange={handleInputChange}
                     disabled={!isEditing}
                   />
@@ -198,8 +208,8 @@ const ProfilePage = () => {
                   <Label htmlFor="postalCode">Postal Code</Label>
                   <Input
                     id="postalCode"
-                    name="Postal code"
-                    value={sponsor['Postal code']}
+                    name="postal_code"
+                    value={sponsor.postal_code || ''}
                     onChange={handleInputChange}
                     disabled={!isEditing}
                   />
@@ -210,8 +220,8 @@ const ProfilePage = () => {
                   <Label htmlFor="city">City</Label>
                   <Input
                     id="city"
-                    name="City"
-                    value={sponsor.City}
+                    name="city"
+                    value={sponsor.city || ''}
                     onChange={handleInputChange}
                     disabled={!isEditing}
                   />
@@ -220,45 +230,25 @@ const ProfilePage = () => {
               <div className="flex items-center space-x-4">
                 <div className="flex-grow">
                   <Label htmlFor="region">Region</Label>
-                  <Select
+                  <Input
+                    id="region"
+                    name="region"
+                    value={sponsor.region || ''}
+                    onChange={handleInputChange}
                     disabled={!isEditing}
-                    onValueChange={(value) =>
-                      handleSelectChange('Region', value)
-                    }
-                    value={sponsor.Region}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select region" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Maryland (MD)">
-                        Maryland (MD)
-                      </SelectItem>
-                      {/* Add other regions as needed */}
-                    </SelectContent>
-                  </Select>
+                  />
                 </div>
               </div>
               <div className="flex items-center space-x-4">
                 <div className="flex-grow">
                   <Label htmlFor="country">Country</Label>
-                  <Select
+                  <Input
+                    id="country"
+                    name="country"
+                    value={sponsor.country || ''}
+                    onChange={handleInputChange}
                     disabled={!isEditing}
-                    onValueChange={(value) =>
-                      handleSelectChange('Country', value)
-                    }
-                    value={sponsor.Country}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select country" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="United States (US)">
-                        United States (US)
-                      </SelectItem>
-                      {/* Add other countries as needed */}
-                    </SelectContent>
-                  </Select>
+                  />
                 </div>
               </div>
             </div>

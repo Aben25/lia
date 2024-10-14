@@ -6,11 +6,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
-interface ProfilePicture {
-  url: string;
-  filename: string;
-}
-
 interface Child {
   id: number;
   full_name: string;
@@ -22,9 +17,8 @@ interface Child {
   gender: string;
   profile_picture_id: number;
   gallery_id: number;
-  profile_picture?: ProfilePicture;
   bio: string;
-  profile_picture_url?: string; // Ensure this is included
+  profile_picture_url?: string;
 }
 
 interface ChildDetailsProps {
@@ -71,13 +65,15 @@ export default function ChildDetails({ child }: ChildDetailsProps) {
                 <AvatarFallback>{fallbackInitials || 'N/A'}</AvatarFallback>
               )}
             </Avatar>
-            {child.gallery_id && (
+            {/* {Number.isInteger(child.gallery_id) && child.gallery_id > 0 ? (
               <Link href={`/protected/gallery/${child.gallery_id}`}>
                 <Button variant="outline" className="mt-2">
                   View Gallery
                 </Button>
               </Link>
-            )}
+            ) : (
+              <p>No gallery available</p>
+            )} */}
           </div>
           <div className="flex flex-col w-full sm:w-auto">
             <p className="text-sm text-gray-600 mb-2 text-center sm:text-left">

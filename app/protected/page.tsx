@@ -47,27 +47,27 @@ const AllStatistics: React.FC = () => {
 
         // Fetch total sponsors
         const { count: sponsorsCount, error: sponsorsError } = await supabase
-          .from('Sponsors')
+          .from('sponsors')
           .select('*', { count: 'exact', head: true });
 
         if (sponsorsError) throw sponsorsError;
 
         // Fetch total children
         const { count: childrenCount, error: childrenError } = await supabase
-          .from('Sponsees')
+          .from('sponsees')
           .select('*', { count: 'exact', head: true });
 
         if (childrenError) throw childrenError;
 
         // Fetch donations
         const { data: donations, error: donationsError } = await supabase
-          .from('Sponsors')
-          .select('Amount, "First payment date (America/New_York)"');
+          .from('sponsors')
+          .select('amount, first_payment_date');
 
         if (donationsError) throw donationsError;
 
         const totalDonations = donations.reduce(
-          (sum, donation) => sum + (donation.Amount || 0),
+          (sum, donation) => sum + (donation.amount || 0),
           0
         );
         const averageDonation =
@@ -76,13 +76,11 @@ const AllStatistics: React.FC = () => {
         // Process donations trend
         const donationsTrend = donations.reduce<Record<string, number>>(
           (acc, donation) => {
-            const date = new Date(
-              donation['First payment date (America/New_York)']
-            );
+            const date = new Date(donation.first_payment_date);
             const month = date.toLocaleString('default', { month: 'short' });
             const year = date.getFullYear();
             const key = `${month} ${year}`;
-            acc[key] = (acc[key] || 0) + (donation.Amount || 0);
+            acc[key] = (acc[key] || 0) + (donation.amount || 0);
             return acc;
           },
           {}
@@ -105,15 +103,15 @@ const AllStatistics: React.FC = () => {
 
         // Fetch sponsorships by country
         const { data: sponsorsByCountry, error: countryError } = await supabase
-          .from('Sponsors')
-          .select('Country');
+          .from('sponsors')
+          .select('country');
 
         if (countryError) throw countryError;
 
         const sponsorshipsByCountry = sponsorsByCountry.reduce<
           Record<string, number>
         >((acc, sponsor) => {
-          acc[sponsor.Country] = (acc[sponsor.Country] || 0) + 1;
+          acc[sponsor.country] = (acc[sponsor.country] || 0) + 1;
           return acc;
         }, {});
 
@@ -121,16 +119,17 @@ const AllStatistics: React.FC = () => {
           .map(([Country, count]) => ({ Country, count }))
           .sort((a, b) => b.count - a.count);
 
-        // For impact breakdown, we'll use the distribution of sponsored children by grade
-        const { data: sponseesGrades, error: gradesError } = await supabase
-          .from('Sponsees')
-          .select('grade');
+        // For impact breakdown, we'll use the academic_progress field
+        const { data: sponseesProgress, error: progressError } = await supabase
+          .from('sponsees')
+          .select('academic_progress');
 
-        if (gradesError) throw gradesError;
+        if (progressError) throw progressError;
 
-        const impactBreakdown = sponseesGrades.reduce<Record<string, number>>(
+        const impactBreakdown = sponseesProgress.reduce<Record<string, number>>(
           (acc, sponsee) => {
-            acc[sponsee.grade] = (acc[sponsee.grade] || 0) + 1;
+            acc[sponsee.academic_progress] =
+              (acc[sponsee.academic_progress] || 0) + 1;
             return acc;
           },
           {}
