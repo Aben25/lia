@@ -13,6 +13,7 @@ import {
   X,
   Mail,
   Phone,
+  LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@assets/logo/white_main_transparent@600x.png';
@@ -25,13 +26,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { createClient } from '@/utils/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const pathname = usePathname();
   const supabase = createClient();
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -43,18 +52,16 @@ const Sidebar = () => {
 
     checkAuthStatus();
 
-    // Set up a listener for authentication state changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setIsLoggedIn(!!session);
       }
     );
 
-    // Clean up the listener when the component unmounts
     return () => {
       authListener.subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, [supabase.auth]);
 
   const navItems = [
     { href: '/protected', icon: Home, label: 'All Statistics' },
@@ -75,56 +82,83 @@ const Sidebar = () => {
       'mailto:info@loveinaction.co?subject=Support Request';
   };
 
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: 'Signed out successfully',
+        description: 'You have been logged out of your account.',
+      });
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast({
+        title: 'Sign out failed',
+        description: 'There was an error signing you out. Please try again.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
     <>
-      {/* Mobile menu button */}
-      <button
+      <Button
         onClick={toggleSidebar}
-        className="lg:hidden fixed top-4 left-4 z-20 p-2 bg-blue-900 text-white rounded-md"
+        className="lg:hidden fixed top-4 left-4 z-20 p-2 bg-primary text-primary-foreground"
+        size="icon"
+        variant="outline"
       >
-        {isOpen ? <X size={24} /> : <Menu size={24} />}
-      </button>
+        <span className="sr-only">{isOpen ? 'Close menu' : 'Open menu'}</span>
+        {isOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+      </Button>
 
-      {/* Sidebar */}
-      <div
+      <aside
         className={cn(
-          'bg-blue-900 text-white w-64 space-y-6 py-7 px-2 fixed top-0 h-full z-10 transition-all duration-300 ease-in-out',
-          isOpen ? 'left-0' : '-left-64',
-          'lg:left-0' // Always visible on large screens
+          'bg-primary text-primary-foreground w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 transform z-10 transition-transform duration-300 ease-in-out lg:translate-x-0',
+          isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="flex flex-col items-left space-y-2 px-4">
-          <Image src={logo} alt="Logo" width={100} height={100} />
+        <div className="flex flex-col items-center space-y-2 px-4">
+          <Image src={logo} alt="Logo" width={100} height={100} priority />
         </div>
 
-        <nav className="space-y-2 mt-8">
+        <nav className="space-y-1 mt-8">
           {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                'flex items-center py-2.5 px-4 rounded transition duration-200',
-                pathname === item.href
-                  ? 'bg-blue-800 text-white'
-                  : 'hover:bg-blue-800 text-blue-100'
-              )}
-              onClick={() => setIsOpen(false)} // Close sidebar on mobile when link is clicked
-            >
-              <item.icon className="mr-3" size={20} />
-              {item.label}
-            </Link>
+            <TooltipProvider key={item.href}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      'flex items-center py-2.5 px-4 rounded transition duration-200',
+                      pathname === item.href
+                        ? 'bg-primary-foreground text-primary'
+                        : 'hover:bg-primary-foreground/10 text-primary-foreground/80'
+                    )}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <item.icon className="mr-3 h-5 w-5" />
+                    <span className="text-sm font-medium">{item.label}</span>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>{item.label}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           ))}
         </nav>
 
         <div className="px-4 mt-auto">
-          <div className="bg-blue-800 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2">Need Help?</h3>
-            <p className="text-sm text-blue-200 mb-3">
+          <div className="bg-primary-foreground/10 p-4 rounded-lg">
+            <h3 className="font-semibold mb-2 text-primary-foreground">
+              Need Help?
+            </h3>
+            <p className="text-sm text-primary-foreground/80 mb-3">
               Contact our support team for assistance.
             </p>
             <Dialog>
               <DialogTrigger asChild>
-                <Button className="w-full bg-white text-blue-900 hover:bg-blue-100">
+                <Button className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/90">
                   Contact Support
                 </Button>
               </DialogTrigger>
@@ -145,7 +179,7 @@ const Sidebar = () => {
                   </Button>
                   <Button
                     className="flex items-center justify-center gap-2"
-                    onClick={() => (window.location.href = 'tel:+1234567890')} // Replace with actual support phone number
+                    onClick={() => (window.location.href = 'tel:+1234567890')}
                   >
                     <Phone className="mr-2 h-4 w-4" />
                     Call Support
@@ -155,7 +189,20 @@ const Sidebar = () => {
             </Dialog>
           </div>
         </div>
-      </div>
+
+        {isLoggedIn && (
+          <div className="px-4">
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+              onClick={handleSignOut}
+            >
+              <LogOut className="mr-3 h-5 w-5" />
+              <span className="text-sm font-medium">Sign Out</span>
+            </Button>
+          </div>
+        )}
+      </aside>
     </>
   );
 };
