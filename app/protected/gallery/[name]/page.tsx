@@ -28,7 +28,7 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
       id,
       name,
       description,
-      sponsee:sponsee_id!inner (
+      sponsee:sponsee_id (
         full_name
       )
     `
@@ -36,16 +36,25 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
     .eq('id', galleryId)
     .single();
 
-  if (!galleryData) {
-    // Handle the case where data is not returned
-    return <div>Error loading gallery</div>;
+  if (galleryError) {
+    console.error('Error fetching gallery data:', galleryError);
+    return <div>Error loading gallery: {galleryError.message}</div>;
+  }
+
+  // Ensure galleryData is defined and has sponsee data
+  if (
+    !galleryData ||
+    !galleryData.sponsee ||
+    galleryData.sponsee.length === 0
+  ) {
+    return <div>No sponsee found for this gallery.</div>;
   }
 
   // Now TypeScript knows the exact shape of galleryData
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">
-        {galleryData.sponsee.full_name}'s Gallery
+        {galleryData.sponsee[0].full_name}'s Gallery
       </h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {galleryMedia.map((item) => {
