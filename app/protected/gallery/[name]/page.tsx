@@ -28,7 +28,7 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
       id,
       name,
       description,
-      sponsee:sponsee_id (
+      sponsee:sponsee_id!inner (
         full_name
       )
     `
@@ -36,9 +36,9 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
     .eq('id', galleryId)
     .single();
 
-  if (galleryError) {
-    console.error('Error fetching gallery data:', galleryError);
-    return <div>Error loading gallery: {galleryError.message}</div>;
+  if (!galleryData) {
+    // Handle the case where data is not returned
+    return <div>Error loading gallery</div>;
   }
 
   // Fetch gallery media records
