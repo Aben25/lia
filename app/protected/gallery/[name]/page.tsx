@@ -64,18 +64,20 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
   // Fetch media data for all image_ids
   const { data: mediaData, error: mediaError } = await supabase
     .from('media')
-    .select('id, filename')
-    .in('id', imageIds);
+    .select('id, filename');
 
   if (mediaError) {
     console.error('Error fetching media data:', mediaError);
     return <div>Error loading gallery: {mediaError.message}</div>;
   }
 
-  const mediaMap = mediaData.reduce((acc, media) => {
-    acc[media.id] = media.filename;
-    return acc;
-  }, {});
+  const mediaMap: Record<number, string> = mediaData.reduce(
+    (acc: Record<number, string>, media: { id: number; filename: string }) => {
+      acc[media.id] = media.filename;
+      return acc;
+    },
+    {}
+  );
 
   // Attach filenames to gallery media records
   const galleryMedia = galleryMediaRecords.map((record) => {
