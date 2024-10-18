@@ -41,53 +41,7 @@ export default async function GalleryPage({ params }: GalleryPageProps) {
     return <div>Error loading gallery</div>;
   }
 
-  // Fetch gallery media records
-  const { data: galleryMediaRecords, error } = await supabase
-    .from('gallery_media')
-    .select('image_id, video_id, caption')
-    .eq('_parent_id', galleryId);
-
-  if (error) {
-    console.error('Error fetching gallery media:', error);
-    return <div>Error loading gallery: {error.message}</div>;
-  }
-
-  if (!galleryMediaRecords || galleryMediaRecords.length === 0) {
-    return <div>No images found in the gallery</div>;
-  }
-
-  // Collect all image_ids
-  const imageIds = galleryMediaRecords
-    .map((record) => record.image_id)
-    .filter((id) => id !== null && id !== undefined);
-
-  // Fetch media data for all image_ids
-  const { data: mediaData, error: mediaError } = await supabase
-    .from('media')
-    .select('id, filename');
-
-  if (mediaError) {
-    console.error('Error fetching media data:', mediaError);
-    return <div>Error loading gallery: {mediaError.message}</div>;
-  }
-
-  const mediaMap: Record<number, string> = mediaData.reduce(
-    (acc: Record<number, string>, media: { id: number; filename: string }) => {
-      acc[media.id] = media.filename;
-      return acc;
-    },
-    {}
-  );
-
-  // Attach filenames to gallery media records
-  const galleryMedia = galleryMediaRecords.map((record) => {
-    const filename = mediaMap[record.image_id];
-    return {
-      ...record,
-      filename,
-    };
-  });
-
+  // Now TypeScript knows the exact shape of galleryData
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-6">
