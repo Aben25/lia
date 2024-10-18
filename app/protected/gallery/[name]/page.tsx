@@ -1,7 +1,14 @@
 import { createClient } from '@/utils/supabase/server';
 import Image from 'next/image';
 
-export default async function GalleryPage({ params }) {
+// Add type for params
+interface GalleryPageProps {
+  params: {
+    gallery_id: string;
+  };
+}
+
+export default async function GalleryPage({ params }: GalleryPageProps) {
   const { gallery_id } = params;
   const galleryId = parseInt(gallery_id, 10);
   console.log('Parsed galleryId:', galleryId);
