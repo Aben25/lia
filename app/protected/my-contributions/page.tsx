@@ -167,13 +167,13 @@ const MyContributions = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <StatCard
           title="ALL-TIME DONATIONS"
-          value={formatCurrency(contributions?.amount)}
+          value={formatCurrency(contributions?.amount ?? null)}
           icon={DollarSign}
           tooltip="Total amount donated since you became a sponsor"
         />
         <StatCard
           title="CONTACT SINCE"
-          value={formatDate(contributions?.first_payment_date)}
+          value={formatDate(contributions?.first_payment_date ?? null)}
           icon={Calendar}
           tooltip="The date of your first contribution"
         />
@@ -200,9 +200,11 @@ const MyContributions = () => {
             <TableBody>
               <TableRow>
                 <TableCell>
-                  {formatDate(contributions?.last_payment_date)}
+                  {formatDate(contributions?.last_payment_date ?? null)}
                 </TableCell>
-                <TableCell>{formatCurrency(contributions?.amount)}</TableCell>
+                <TableCell>
+                  {formatCurrency(contributions?.amount ?? null)}
+                </TableCell>
               </TableRow>
             </TableBody>
           </Table>
