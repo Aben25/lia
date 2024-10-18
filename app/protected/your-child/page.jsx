@@ -2,24 +2,6 @@ import ChildDetails from '@/components/ChildDetails';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 
-// Add this type definition at the top of the file, after the imports
-type Sponsee = {
-  id: number;
-  full_name: string;
-  location: string;
-  date_of_birth: string;
-  academic_progress: string;
-  last_message: string;
-  milestones: string;
-  contributions_used_for: string;
-  sponsorship_duration: string;
-  donated_amount: number;
-  last_update: string;
-  Gender: string;
-  profile_picture_id: number | null;
-  bio: string;
-};
-
 export default async function ProtectedPage() {
   const supabase = createClient();
 
@@ -81,14 +63,12 @@ export default async function ProtectedPage() {
     );
   }
 
-  // Update this line to use the new type
-  const sponseesList: Sponsee[] =
-    sponseesRelData?.map((rel) => rel.sponsees) || [];
+  const sponseesList = sponseesRelData?.map((rel) => rel.sponsees) || [];
 
   // Collect all profile_picture_ids
   const profilePictureIds = sponseesList
     .map((sponsee) => sponsee.profile_picture_id)
-    .filter((id) => id !== null && id !== undefined);
+    .filter((id) => id != null);
 
   // Fetch media data for all profile_picture_ids
   let mediaMap = {};
