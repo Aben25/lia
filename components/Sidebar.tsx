@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@assets/logo/white_main_transparent@600x.png';
+import logoDark from '@assets/logo/black.png';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -34,10 +35,12 @@ import {
 } from '@/components/ui/tooltip';
 import { createClient } from '@/utils/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { useTheme } from 'next-themes';
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { theme } = useTheme();
   const pathname = usePathname();
   const supabase = createClient();
   const { toast } = useToast();
@@ -118,7 +121,13 @@ const Sidebar = () => {
         )}
       >
         <div className="flex flex-col items-center space-y-2 px-4">
-          <Image src={logo} alt="Logo" width={100} height={100} priority />
+          <Image
+            src={theme === 'dark' ? logoDark : logo}
+            alt="Logo"
+            width={100}
+            height={100}
+            priority
+          />
         </div>
 
         <nav className="space-y-1 mt-8">
