@@ -8,7 +8,7 @@ export default function MainLayout({
   return (
     <>
       <div className="main-layout flex">
-        <Sidebar />
+        <Sidebar className="text-[#7C161600] bg-[#F08451]" />
         <main className="flex-grow lg:ml-60 p-5">{children}</main>
       </div>
     </>

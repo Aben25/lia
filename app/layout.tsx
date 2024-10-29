@@ -77,7 +77,7 @@ export default function RootLayout({
                   rel="noreferrer"
                 >
                   Love in Action
-              </a>
+                </a>
               </p>
               <ThemeSwitcher />
             </footer>
