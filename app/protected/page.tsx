@@ -299,15 +299,15 @@ const AllStatistics: React.FC = () => {
               <CardHeader>
                 <CardTitle>Impact Breakdown (by Grade)</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
+              <CardContent className="w-full aspect-[2/1]">
+                <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={stats.impactBreakdown}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      outerRadius={80}
+                      outerRadius={'80%'}
                       fill="#8884d8"
                       dataKey="value"
                       label={({ category, percent }) =>

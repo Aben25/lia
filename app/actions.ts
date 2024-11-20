@@ -29,13 +29,15 @@ export const signUpAction = async (formData: FormData) => {
   } else if (data?.user?.identities?.length === 0) {
     return {
       success: false,
-      message: 'Email already registered. Please sign in or reset your password.',
+      message:
+        'Email already registered. Please sign in or reset your password.',
       showPopup: true,
     };
   } else {
     return {
       success: true,
-      message: 'Thanks for signing up! Please check your email for a verification link.',
+      message:
+        'Thanks for signing up! Please check your email for a verification link.',
       showPopup: true,
     };
   }
@@ -56,7 +58,7 @@ export const signInAction = async (formData: FormData) => {
     return { error: error.message };
   }
 
-  return redirect('/protected');
+  return redirect('/protected/your-child');
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {

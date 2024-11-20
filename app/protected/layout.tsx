@@ -9,7 +9,7 @@ export default function MainLayout({
     <>
       <div className="main-layout flex">
         <Sidebar className="text-[#7C161600] bg-[#F08451]" />
-        <main className="flex-grow p-5">{children}</main>
+        <main className="flex-grow p-5 lg:ml-60">{children}</main>
       </div>
     </>
   );
