@@ -1,12 +1,16 @@
-// Sidebar.tsx
-import React from 'react';
+import Sidebar from '@/components/Sidebar';
 
-interface SidebarProps {
-  className?: string; // Allow className to be passed
+export default function MainLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <div className="main-layout flex">
+        <Sidebar className="text-[#7C161600] bg-[#F08451]" />
+        <main className="flex-grow p-5">{children}</main>
+      </div>
+    </>
+  );
 }
-
-const Sidebar: React.FC<SidebarProps> = ({ className }) => {
-  return <div className={`sidebar ${className}`}>Sidebar Content</div>;
-};
-
-export default Sidebar;

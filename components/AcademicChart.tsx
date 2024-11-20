@@ -43,7 +43,7 @@ export default function AcademicChart({ data }: Props) {
           <YAxis domain={[40, 100]} ticks={[40, 60, 80, 100]} />
           <Tooltip formatter={(value) => Math.round(Number(value))} />
           <Legend
-            align="end"
+            align="right"
             verticalAlign="bottom"
             layout="horizontal"
             wrapperStyle={{ marginTop: 20 }}
