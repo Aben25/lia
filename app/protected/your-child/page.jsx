@@ -122,21 +122,17 @@ export default async function ProtectedPage() {
   });
 
   return (
-    <div className="flex-1 w-full flex flex-col gap-12 p-8">
-      <h1 className="text-3xl font-bold mb-6">Your Child</h1>
-
-      <div className="flex flex-col gap-4">
-        {sponseesList.length > 0 ? (
-          sponseesList.map((child) => (
-            <ChildDetails
-              key={child.id}
-              child={{ ...child, gender: child.Gender || 'Unknown' }}
-            />
-          ))
-        ) : (
-          <p>No sponsored children found.</p>
-        )}
-      </div>
+    <div className="flex-1 w-full">
+      {sponseesList.length > 0 ? (
+        sponseesList.map((child) => (
+          <ChildDetails
+            key={child.id}
+            child={{ ...child, gender: child.Gender || 'Unknown' }}
+          />
+        ))
+      ) : (
+        <p>No sponsored children found.</p>
+      )}
     </div>
   );
 }
