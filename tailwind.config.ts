@@ -79,6 +79,10 @@ const config: Config = {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
+      aspectRatio: {
+        '2/1': '2 / 1', // Custom ratio for width-to-height = 2:1 (height is half of width)
+        '4/1': '4 / 1', // Custom ratio for width-to-height = 4:1 (height is one-fourth of width)
+      },
     },
   },
   plugins: [require('tailwindcss-animate')],
