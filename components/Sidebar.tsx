@@ -5,8 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import {
-  Home,
-  User,
+  LayoutDashboard,
   DollarSign,
   Heart,
   Menu,
@@ -14,6 +13,7 @@ import {
   Mail,
   Phone,
   LogOut,
+  HelpCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@assets/logo/white_main_transparent@600x.png';
@@ -71,17 +71,25 @@ const Sidebar = ({ className }: SidebarProps) => {
   }, [supabase.auth]);
 
   const navItems = [
-    { href: '/protected', icon: Home, label: 'All Statistics' },
-    { href: '/protected/your-child', icon: Heart, label: 'Your Child' },
-    { href: '/protected/profile', icon: User, label: 'Profile' },
+    {
+      href: '/protected',
+      icon: LayoutDashboard,
+      label: 'All Statistics',
+      description: 'View overall statistics and metrics',
+    },
+    {
+      href: '/protected/your-child',
+      icon: Heart,
+      label: 'Your Child',
+      description: 'View and manage your sponsored child',
+    },
     {
       href: '/protected/my-contributions',
       icon: DollarSign,
       label: 'My Contributions',
+      description: 'Track your donations and contributions',
     },
   ];
-
-  const toggleSidebar = () => setIsOpen(!isOpen);
 
   const handleEmailSupport = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -108,33 +116,38 @@ const Sidebar = ({ className }: SidebarProps) => {
 
   return (
     <>
+      {/* Mobile Menu Button */}
       <Button
-        onClick={toggleSidebar}
-        className="lg:hidden fixed top-4 left-4 z-20 p-2 bg-primary text-primary-foreground"
+        onClick={() => setIsOpen(!isOpen)}
+        className="lg:hidden fixed top-4 left-4 z-20 p-2"
         size="icon"
         variant="outline"
       >
-        <span className="sr-only">{isOpen ? 'Close menu' : 'Open menu'}</span>
         {isOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
       </Button>
 
+      {/* Sidebar */}
       <aside
         className={cn(
-          'bg-primary text-primary-foreground w-64 space-y-6 py-7 px-2 fixed inset-y-0 left-0 transform z-10 transition-transform duration-300 ease-in-out lg:translate-x-0',
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+          'bg-[#1e1e2f] text-white w-64 flex flex-col fixed inset-y-0 left-0 transform z-10 transition-transform duration-300 ease-in-out lg:translate-x-0',
+          isOpen ? 'translate-x-0' : '-translate-x-full',
+          className
         )}
       >
-        <div className="flex flex-col items-center space-y-2 px-4">
+        {/* Logo */}
+        <div className="flex justify-center items-center h-20 border-b border-white/10">
           <Image
             src={theme === 'dark' ? logoDark : logo}
             alt="Logo"
-            width={100}
-            height={100}
+            width={120}
+            height={40}
             priority
+            className="object-contain"
           />
         </div>
 
-        <nav className="space-y-1 mt-8">
+        {/* Navigation */}
+        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
           {navItems.map((item) => (
             <TooltipProvider key={item.href}>
               <Tooltip>
@@ -142,79 +155,75 @@ const Sidebar = ({ className }: SidebarProps) => {
                   <Link
                     href={item.href}
                     className={cn(
-                      'flex items-center py-2.5 px-4 rounded transition duration-200',
+                      'flex items-center px-4 py-3 rounded-lg transition-colors duration-200',
                       pathname === item.href
-                        ? 'bg-primary-foreground text-primary'
-                        : 'hover:bg-primary-foreground/10 text-primary-foreground/80'
+                        ? 'bg-blue-500 text-white'
+                        : 'text-gray-300 hover:bg-blue-500/10 hover:text-white'
                     )}
                     onClick={() => setIsOpen(false)}
                   >
-                    <item.icon className="mr-3 h-5 w-5" />
+                    <item.icon className="h-5 w-5 mr-3" />
                     <span className="text-sm font-medium">{item.label}</span>
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent side="right">
-                  <p>{item.label}</p>
+                  <p>{item.description}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           ))}
         </nav>
 
-        <div className="px-4 mt-auto">
-          <div className="bg-primary-foreground/10 p-4 rounded-lg">
-            <h3 className="font-semibold mb-2 text-primary-foreground">
-              Need Help?
-            </h3>
-            <p className="text-sm text-primary-foreground/80 mb-3">
-              Contact our support team for assistance.
-            </p>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="w-full bg-primary-foreground text-primary hover:bg-primary-foreground/90">
-                  Contact Support
+        {/* Help Section */}
+        <div className="p-4 border-t border-white/10">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                className="w-full justify-start text-gray-300 hover:text-white hover:bg-blue-500/10"
+              >
+                <HelpCircle className="h-5 w-5 mr-3" />
+                <span className="text-sm font-medium">Need Help?</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Contact Support</DialogTitle>
+                <DialogDescription>
+                  Choose how you'd like to get in touch with our support team.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <Button
+                  className="flex items-center justify-center gap-2"
+                  onClick={handleEmailSupport}
+                >
+                  <Mail className="h-4 w-4" />
+                  Email Support
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle>Contact Support</DialogTitle>
-                  <DialogDescription>
-                    Choose how you'd like to get in touch with our support team.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <Button
-                    className="flex items-center justify-center gap-2"
-                    onClick={handleEmailSupport}
-                  >
-                    <Mail className="mr-2 h-4 w-4" />
-                    Email Support
-                  </Button>
-                  <Button
-                    className="flex items-center justify-center gap-2"
-                    onClick={() => (window.location.href = 'tel:+1234567890')}
-                  >
-                    <Phone className="mr-2 h-4 w-4" />
-                    Call Support
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </div>
+                <Button
+                  className="flex items-center justify-center gap-2"
+                  onClick={() => (window.location.href = 'tel:+1234567890')}
+                >
+                  <Phone className="h-4 w-4" />
+                  Call Support
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
 
-        {isLoggedIn && (
-          <div className="px-4">
+          {/* Sign Out Button */}
+          {isLoggedIn && (
             <Button
               variant="ghost"
-              className="w-full justify-start text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+              className="w-full justify-start mt-2 text-gray-300 hover:text-white hover:bg-blue-500/10"
               onClick={handleSignOut}
             >
-              <LogOut className="mr-3 h-5 w-5" />
+              <LogOut className="h-5 w-5 mr-3" />
               <span className="text-sm font-medium">Sign Out</span>
             </Button>
-          </div>
-        )}
+          )}
+        </div>
       </aside>
     </>
   );

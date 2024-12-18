@@ -1,6 +1,7 @@
 'use client';
 
 import { Card, CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   FileText,
   MapPin,
@@ -8,31 +9,47 @@ import {
   GraduationCap,
   Plus,
   Star,
+  Info,
+  Heart,
+  BookOpen,
+  LineChart,
+  Calendar,
+  ImageIcon,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import AcademicChart from './AcademicChart';
+import { format, parseISO } from 'date-fns';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 interface Child {
+  id?: number;
   full_name?: string;
-  bio?: string;
+  about?: string;
   location?: string;
-  age?: string;
+  date_of_birth?: string;
   grade?: string;
   gender?: string;
+  Gender?: string;
   profile_picture_url?: string;
-  dream?: string;
-  education_status?: {
-    current_grade: string;
-    progress: string;
-  };
-  health_status?: {
-    condition: string;
-    last_checkup: string;
-  };
-  special_needs?: {
-    need: string;
-    status: string;
-  };
+  aspiration?: string;
+  education?: string;
+  hobby?: string;
+  how_sponsorship_will_help?: string;
+  family?: string;
+  joined_sponsorship_program?: string;
+  gallery_id?: number;
+}
+
+function formatDate(dateString?: string) {
+  if (!dateString) return 'Not available';
+  try {
+    // Remove the time portion if it exists
+    const datePart = dateString.split('T')[0];
+    return format(parseISO(datePart), 'MMMM d, yyyy');
+  } catch (error) {
+    return dateString;
+  }
 }
 
 export default function Component({ child }: { child?: Child } = {}) {
@@ -72,68 +89,85 @@ export default function Component({ child }: { child?: Child } = {}) {
     setAcademicData(data);
   }, []);
 
-  const mockChild = {
-    full_name: child?.full_name || 'Nebiyu Endrias',
-    bio:
-      child?.bio ||
-      "Nebiyu Endrias is a 17-year-old boy who lives with his mother Abebech Fanta, a stay-at-home mother, and his 4-year-old brother Abenezer Endrias. The family lives in Halesh, a region in Boreda Arbaminch where Malaria is a common disease. Nebiyu's family indicated that they have insufficient food in the house. They do not have a stable house to live in.",
-    location: child?.location || 'Ethiopia',
-    age: child?.age || '17 years old',
-    grade: child?.grade || 'Grade 12',
-    gender: child?.gender || 'Male',
-    dream: child?.dream || 'Aspires to be a doctor',
-    education_status: child?.education_status || {
-      current_grade: '5th',
-      progress: '80%',
-    },
-    health_status: child?.health_status || {
-      condition: 'Good',
-      last_checkup: '05/20/2024',
-    },
-    special_needs: child?.special_needs || {
-      need: 'Daily Insulin',
-      status: 'Good',
-    },
-  };
-
   return (
     <div className="w-full max-w-7xl mx-auto space-y-8 p-8">
-      <h1 className="text-2xl font-bold text-[#1e3a8a] mb-6">Child Details</h1>
-      <Card>
-        <CardContent className="p-8">
-          <div className="flex flex-col sm:flex-row gap-6">
-            <img
-              src={
-                child?.profile_picture_url ||
-                '/placeholder.svg?height=256&width=256'
-              }
-              alt={mockChild.full_name}
-              className="w-64 h-64 object-cover rounded-lg"
-            />
-            <div className="flex-1 space-y-4">
-              <div>
-                <h2 className="text-2xl  text-[#1e3a8a]">
-                  {mockChild.full_name}
-                </h2>
-                <p className="text-lg text-gray-600">{mockChild.dream}</p>
-              </div>
-              <p className="text-gray-600 leading-relaxed">{mockChild.bio}</p>
-              <div className="flex justify-between">
-                <div className="flex items-center gap-2">
-                  <User className="w-5 h-5 text-gray-500" />
-                  <span className="text-gray-600">{mockChild.gender}</span>
+      {/* Header Section - Always visible */}
+      <Card className="bg-[#1e1e2f] border-0 overflow-hidden">
+        <CardContent className="p-0">
+          <div className="relative">
+            {/* Background Pattern */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10" />
+
+            <div className="relative p-8">
+              <div className="flex flex-col lg:flex-row items-start gap-8">
+                {/* Image Section */}
+                <div className="relative shrink-0">
+                  <div className="w-64 h-64 rounded-lg overflow-hidden ring-4 ring-white/10">
+                    <img
+                      src={
+                        child?.profile_picture_url ||
+                        '/placeholder.svg?height=256&width=256'
+                      }
+                      alt={child?.full_name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  {child?.gallery_id && (
+                    <Link
+                      href={`/protected/your-child/gallery/${child.id}`}
+                      className="absolute -bottom-3 left-1/2 -translate-x-1/2"
+                    >
+                      <Button className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg flex items-center gap-2">
+                        <ImageIcon className="w-4 h-4" />
+                        View Gallery
+                      </Button>
+                    </Link>
+                  )}
                 </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-gray-500" />
-                  <span className="text-gray-600">{mockChild.location}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <User className="w-5 h-5 text-gray-500" />
-                  <span className="text-gray-600">{mockChild.age}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <GraduationCap className="w-5 h-5 text-gray-500" />
-                  <span className="text-gray-600">{mockChild.grade}</span>
+
+                {/* Info Section */}
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-3xl font-bold text-white mb-6">
+                    {child?.full_name}
+                  </h1>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    <div className="flex items-center gap-3 text-gray-300">
+                      <Calendar className="w-5 h-5 text-blue-400 shrink-0" />
+                      <div>
+                        <p className="text-sm text-gray-400">Date of Birth</p>
+                        <p className="font-medium">
+                          {formatDate(child?.date_of_birth)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-gray-300">
+                      <MapPin className="w-5 h-5 text-blue-400 shrink-0" />
+                      <div>
+                        <p className="text-sm text-gray-400">Location</p>
+                        <p className="font-medium">{child?.location}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-gray-300">
+                      <Star className="w-5 h-5 text-blue-400 shrink-0" />
+                      <div>
+                        <p className="text-sm text-gray-400">Joined Program</p>
+                        <p className="font-medium">
+                          {formatDate(child?.joined_sponsorship_program)}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-gray-300">
+                      <GraduationCap className="w-5 h-5 text-blue-400 shrink-0" />
+                      <div>
+                        <p className="text-sm text-gray-400">Education</p>
+                        <p className="font-medium">{child?.education}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -141,93 +175,108 @@ export default function Component({ child }: { child?: Child } = {}) {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardContent className="p-8">
-          <h2 className="text-2xl text-[#1e3a8a] mb-8">Academic Performance</h2>
-          <div className="">
-            <AcademicChart data={academicData} />
-          </div>
-        </CardContent>
-      </Card>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <Card>
-          <CardContent className="p-8">
-            <h2 className="text-2xl  text-[#1e3a8a] mb-6">Documents</h2>
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="text-gray-600">Document Name</div>
-                <div className="text-gray-600">Category</div>
-              </div>
-              {[
-                { name: 'Fall Semester Grade', category: 'Education' },
-                { name: 'Spring Semester Grade', category: 'Education' },
-                { name: 'Annual Checkup Report', category: 'Medical' },
-              ].map((doc, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between py-2 border-b border-gray-100"
-                >
-                  <div className="flex items-center gap-3">
-                    <FileText className="w-5 h-5 text-gray-500" />
-                    <span className="text-[#1e3a8a]">{doc.name}</span>
-                  </div>
-                  <span className="text-gray-600">{doc.category}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      {/* Tabbed Content */}
+      <Tabs defaultValue="personal" className="w-full">
+        <TabsList className="w-full grid grid-cols-4">
+          <TabsTrigger value="personal" className="gap-2">
+            <Info className="w-4 h-4" />
+            <span>Personal Details</span>
+          </TabsTrigger>
+          <TabsTrigger value="about" className="gap-2">
+            <Heart className="w-4 h-4" />
+            <span>About</span>
+          </TabsTrigger>
+          <TabsTrigger value="sponsorship" className="gap-2">
+            <BookOpen className="w-4 h-4" />
+            <span>Sponsorship Impact</span>
+          </TabsTrigger>
+          <TabsTrigger value="academic" className="gap-2">
+            <LineChart className="w-4 h-4" />
+            <span>Academic Progress</span>
+          </TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardContent className="p-8">
-            <h2 className="text-2xl text-[#1e3a8a] mb-6">Status</h2>
-            <div className="space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-[#fcd34d] rounded-lg flex items-center justify-center">
-                  <GraduationCap className="w-6 h-6 text-white" />
+        <TabsContent value="personal">
+          <Card className="dark:bg-gray-900 dark:border-gray-700">
+            <CardContent className="p-8">
+              <h2 className="text-2xl font-semibold text-blue-900 dark:text-blue-100 mb-6">
+                Personal Details
+              </h2>
+              <div className="space-y-6">
+                <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-blue-100 dark:border-gray-700">
+                  <h3 className="font-semibold text-lg mb-3 text-gray-900 dark:text-gray-100">
+                    Family
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    {child?.family}
+                  </p>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">Education Status</h3>
-                  <div className="space-y-1 text-sm text-gray-600">
-                    <p>
-                      Current Grade: {mockChild.education_status.current_grade}
-                    </p>
-                    <p>Progress: {mockChild.education_status.progress}</p>
-                  </div>
+                <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-blue-100 dark:border-gray-700">
+                  <h3 className="font-semibold text-lg mb-3 text-gray-900 dark:text-gray-100">
+                    Aspiration
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    {child?.aspiration}
+                  </p>
+                </div>
+                <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-blue-100 dark:border-gray-700">
+                  <h3 className="font-semibold text-lg mb-3 text-gray-900 dark:text-gray-100">
+                    Hobby
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    {child?.hobby}
+                  </p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-[#60a5fa] rounded-lg flex items-center justify-center">
-                  <Plus className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">Health Status</h3>
-                  <div className="space-y-1 text-sm text-gray-600">
-                    <p>
-                      Current Condition: {mockChild.health_status.condition}
-                    </p>
-                    <p>Last Check-up: {mockChild.health_status.last_checkup}</p>
-                  </div>
-                </div>
+        <TabsContent value="about">
+          <Card className="dark:bg-gray-900 dark:border-gray-700">
+            <CardContent className="p-8">
+              <h2 className="text-2xl font-semibold text-blue-900 dark:text-blue-100 mb-6">
+                About {child?.full_name?.split(' ')[0]}
+              </h2>
+              <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-blue-100 dark:border-gray-700">
+                <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line leading-relaxed">
+                  {child?.about}
+                </p>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-[#c084fc] rounded-lg flex items-center justify-center">
-                  <Star className="w-6 h-6 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1">Special Needs</h3>
-                  <div className="space-y-1 text-sm text-gray-600">
-                    <p>Need: {mockChild.special_needs.need}</p>
-                    <p>Status: {mockChild.special_needs.status}</p>
-                  </div>
+        <TabsContent value="sponsorship">
+          <Card className="dark:bg-gray-900 dark:border-gray-700">
+            <CardContent className="p-8">
+              <h2 className="text-2xl font-semibold text-blue-900 dark:text-blue-100 mb-6">
+                How Sponsorship Will Help
+              </h2>
+              <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-blue-100 dark:border-gray-700">
+                <div className="prose max-w-none text-gray-600 dark:text-gray-300">
+                  <p className="whitespace-pre-line leading-relaxed">
+                    {child?.how_sponsorship_will_help}
+                  </p>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="academic">
+          <Card className="dark:bg-gray-900 dark:border-gray-700">
+            <CardContent className="p-8">
+              <h2 className="text-2xl font-semibold text-blue-900 dark:text-blue-100 mb-6">
+                Academic Performance
+              </h2>
+              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-blue-100 dark:border-gray-700">
+                <AcademicChart data={academicData} />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

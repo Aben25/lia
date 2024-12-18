@@ -29,6 +29,7 @@ export default async function ProtectedPage() {
   }
 
   // Fetch sponsees data
+  console.log('Sponsor ID:', sponsor.id);
   const { data: sponseesRelData, error: sponseesError } = await supabase
     .from('sponsors_rels')
     .select(
@@ -39,26 +40,30 @@ export default async function ProtectedPage() {
         full_name,
         location,
         date_of_birth,
-        academic_progress,
-        last_message,
-        milestones,
-        contributions_used_for,
-        sponsorship_duration,
-        donated_amount,
-        last_update,
+        grade,
+        education,
+        aspiration,
+        hobby,
+        about,
+        how_sponsorship_will_help,
+        family,
+        joined_sponsorship_program,
         Gender,
         profile_picture_id,
-        bio
+        gallery_id
       )
     `
     )
     .eq('parent_id', sponsor.id);
 
   if (sponseesError) {
-    console.error('Error fetching sponsees:', sponseesError);
+    console.error('Detailed sponsees error:', sponseesError);
     return (
       <div className="flex-1 w-full flex flex-col gap-12 p-8">
-        <p>Error fetching sponsored children data.</p>
+        <p>
+          Error fetching sponsored children data. Details:{' '}
+          {sponseesError.message}
+        </p>
       </div>
     );
   }
