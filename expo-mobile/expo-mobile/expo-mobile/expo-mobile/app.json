@@ -1,0 +1,8 @@
+{
+  "expo": {
+    "scheme": "acme",
+    "plugins": ["expo-router"],
+    "name": "expo-mobile",
+    "slug": "expo-mobile"
+  }
+}

@@ -15,6 +15,7 @@ import {
   LogOut,
   HelpCircle,
   FolderKanban,
+  Bell,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@assets/logo/white_main_transparent@600x.png';
@@ -37,14 +38,67 @@ import {
 import { createClient } from '@/utils/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { useTheme } from 'next-themes';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { format } from 'date-fns';
 
 interface SidebarProps {
   className?: string;
 }
 
+const mockNotifications = [
+  {
+    id: 1,
+    type: 'birthday',
+    title: 'Upcoming Birthday',
+    message:
+      'Your sponsee Abebe will be celebrating their 12th birthday next week!',
+    date: new Date().toISOString(),
+    read: false,
+    icon: '🎂',
+  },
+  {
+    id: 2,
+    type: 'graduation',
+    title: 'Graduation Ceremony',
+    message:
+      "Kebede is graduating from primary school this month. Don't forget to send your congratulations!",
+    date: new Date().toISOString(),
+    read: false,
+    icon: '🎓',
+  },
+  {
+    id: 3,
+    type: 'achievement',
+    title: 'Academic Excellence',
+    message:
+      'Almaz achieved top marks in their recent exams! They wanted to thank you for your support.',
+    date: new Date(Date.now() - 86400000).toISOString(),
+    read: true,
+    icon: '🌟',
+  },
+  {
+    id: 4,
+    type: 'general',
+    title: 'New Letter Received',
+    message: 'You have received a new letter from your sponsee Tigist.',
+    date: new Date(Date.now() - 172800000).toISOString(),
+    read: true,
+    icon: '✉️',
+  },
+];
+
 const Sidebar = ({ className }: SidebarProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [notifications, setNotifications] = useState(mockNotifications);
+  const [unreadCount, setUnreadCount] = useState(0);
   const { theme } = useTheme();
   const pathname = usePathname();
   const supabase = createClient();
@@ -70,6 +124,20 @@ const Sidebar = ({ className }: SidebarProps) => {
       authListener.subscription.unsubscribe();
     };
   }, [supabase.auth]);
+
+  useEffect(() => {
+    setUnreadCount(notifications.filter((n) => !n.read).length);
+  }, [notifications]);
+
+  const markAsRead = (notificationId: number) => {
+    setNotifications(
+      notifications.map((notification) =>
+        notification.id === notificationId
+          ? { ...notification, read: true }
+          : notification
+      )
+    );
+  };
 
   const navItems = [
     {
@@ -136,25 +204,101 @@ const Sidebar = ({ className }: SidebarProps) => {
       {/* Sidebar */}
       <aside
         className={cn(
-          'bg-[#1e1e2f] text-white w-64 flex flex-col fixed inset-y-0 left-0 transform z-10 transition-transform duration-300 ease-in-out lg:translate-x-0',
+          'bg-[#F08451] text-white w-64 flex flex-col fixed inset-y-0 left-0 transform z-10 transition-transform duration-300 ease-in-out lg:translate-x-0',
           isOpen ? 'translate-x-0' : '-translate-x-full',
           className
         )}
       >
         {/* Logo */}
-        <div className="flex justify-center items-center h-20 border-b border-white/10">
+        <div className="flex justify-center items-center h-24 px-6">
           <Image
-            src={theme === 'dark' ? logoDark : logo}
-            alt="Logo"
-            width={120}
-            height={40}
+            src={logo}
+            alt="Love in Action"
+            width={160}
+            height={50}
             priority
             className="object-contain"
           />
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+        <nav className="flex-1 px-4 py-6 space-y-4">
+          {/* Notifications */}
+          <div className="mb-6">
+            <DropdownMenu>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className={cn(
+                          'w-full flex items-center px-4 py-3 rounded-lg transition-colors duration-200 text-white hover:bg-white/10 relative group'
+                        )}
+                      >
+                        <Bell className="h-6 w-6 mr-3 text-white/80 group-hover:text-white" />
+                        <span className="text-base font-medium">
+                          Notifications
+                        </span>
+                        {unreadCount > 0 && (
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-red-500 text-sm font-medium text-white flex items-center justify-center">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </button>
+                    </DropdownMenuTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>View your notifications</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <DropdownMenuContent
+                align="end"
+                className="w-[380px] max-h-[500px] overflow-y-auto"
+              >
+                <DropdownMenuLabel className="py-3 px-4 text-lg font-semibold">
+                  Notifications
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {notifications.length === 0 ? (
+                  <div className="p-4 text-center text-sm text-muted-foreground">
+                    No notifications
+                  </div>
+                ) : (
+                  notifications.map((notification) => (
+                    <DropdownMenuItem
+                      key={notification.id}
+                      className={`flex flex-col items-start p-4 cursor-pointer hover:bg-accent ${
+                        !notification.read ? 'bg-muted/50' : ''
+                      }`}
+                      onSelect={() => markAsRead(notification.id)}
+                    >
+                      <div className="flex w-full items-start gap-3">
+                        <span className="text-xl">{notification.icon}</span>
+                        <div className="flex-1">
+                          <div className="flex w-full justify-between items-center">
+                            <span className="font-medium">
+                              {notification.title}
+                            </span>
+                            <span className="text-xs text-muted-foreground">
+                              {format(
+                                new Date(notification.date),
+                                'MMM d, h:mm a'
+                              )}
+                            </span>
+                          </div>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {notification.message}
+                          </p>
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+                  ))
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
           {navItems.map((item) => (
             <TooltipProvider key={item.href}>
               <Tooltip>
@@ -162,15 +306,22 @@ const Sidebar = ({ className }: SidebarProps) => {
                   <Link
                     href={item.href}
                     className={cn(
-                      'flex items-center px-4 py-3 rounded-lg transition-colors duration-200',
+                      'flex items-center px-4 py-3 rounded-lg transition-colors duration-200 group',
                       pathname === item.href
-                        ? 'bg-blue-500 text-white'
-                        : 'text-gray-300 hover:bg-blue-500/10 hover:text-white'
+                        ? 'bg-[#4361ee] text-white'
+                        : 'text-white hover:bg-white/10'
                     )}
                     onClick={() => setIsOpen(false)}
                   >
-                    <item.icon className="h-5 w-5 mr-3" />
-                    <span className="text-sm font-medium">{item.label}</span>
+                    <item.icon
+                      className={cn(
+                        'h-6 w-6 mr-3',
+                        pathname === item.href
+                          ? 'text-white'
+                          : 'text-white/80 group-hover:text-white'
+                      )}
+                    />
+                    <span className="text-base font-medium">{item.label}</span>
                   </Link>
                 </TooltipTrigger>
                 <TooltipContent side="right">
@@ -182,15 +333,15 @@ const Sidebar = ({ className }: SidebarProps) => {
         </nav>
 
         {/* Help Section */}
-        <div className="p-4 border-t border-white/10">
+        <div className="p-4 mt-auto">
           <Dialog>
             <DialogTrigger asChild>
               <Button
                 variant="ghost"
-                className="w-full justify-start text-gray-300 hover:text-white hover:bg-blue-500/10"
+                className="w-full justify-start text-white hover:bg-white/10 group"
               >
-                <HelpCircle className="h-5 w-5 mr-3" />
-                <span className="text-sm font-medium">Need Help?</span>
+                <HelpCircle className="h-6 w-6 mr-3 text-white/80 group-hover:text-white" />
+                <span className="text-base font-medium">Need Help?</span>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -223,11 +374,11 @@ const Sidebar = ({ className }: SidebarProps) => {
           {isLoggedIn && (
             <Button
               variant="ghost"
-              className="w-full justify-start mt-2 text-gray-300 hover:text-white hover:bg-blue-500/10"
+              className="w-full justify-start mt-2 text-white hover:bg-white/10 group"
               onClick={handleSignOut}
             >
-              <LogOut className="h-5 w-5 mr-3" />
-              <span className="text-sm font-medium">Sign Out</span>
+              <LogOut className="h-6 w-6 mr-3 text-white/80 group-hover:text-white" />
+              <span className="text-base font-medium">Sign Out</span>
             </Button>
           )}
         </div>

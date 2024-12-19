@@ -105,6 +105,14 @@ export default function Projects() {
           return;
         }
 
+        projectsData.forEach((project) => {
+          console.log('Project profile picture data:', {
+            projectId: project.id,
+            profilePicture: project.profile_picture,
+            filename: project.profile_picture?.filename,
+          });
+        });
+
         setProjects(projectsData);
       } catch (error) {
         console.error('Error in fetchProjects:', error);
@@ -181,13 +189,12 @@ export default function Projects() {
                 <div className="relative h-64 md:w-72 w-full">
                   {project.profile_picture ? (
                     <Image
-                      src={`https://ntckmekstkqxqgigqzgn.supabase.co/storage/v1/object/public/Media/media/${encodeURIComponent(
-                        project.profile_picture.filename
-                      )}`}
+                      src={`https://ntckmekstkqxqgigqzgn.supabase.co/storage/v1/object/public/Media/${project.profile_picture.filename}`}
                       alt={project.project_title}
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, 288px"
+                      unoptimized
                     />
                   ) : (
                     <div className="w-full h-full bg-muted flex items-center justify-center">

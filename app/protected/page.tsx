@@ -29,6 +29,9 @@ interface StatisticsState {
   sponsorshipsByCountry: Array<{ Country: string; count: number }>;
   donationsTrend: Array<{ month: string; amount: number }>;
   impactBreakdown: Array<{ category: string; value: number }>;
+  genderDistribution: Array<{ gender: string; count: number }>;
+  ageDistribution: Array<{ ageGroup: string; count: number }>;
+  locationDistribution: Array<{ location: string; count: number }>;
 }
 
 const COLORS = [
@@ -53,6 +56,9 @@ const AllStatistics: React.FC = () => {
     sponsorshipsByCountry: [],
     donationsTrend: [],
     impactBreakdown: [],
+    genderDistribution: [],
+    ageDistribution: [],
+    locationDistribution: [],
   });
 
   const fetchStatistics = async () => {
@@ -74,13 +80,13 @@ const AllStatistics: React.FC = () => {
       const sponsorsCount = sponsorsData?.length || 0;
 
       // Fetch total children
-      const { data: sponseesData, error: childrenError } = await supabase
+      const { data: sponseesData, error: sponseesError } = await supabase
         .from('sponsees')
         .select('*');
 
-      if (childrenError) {
-        console.error('Error fetching sponsees:', childrenError);
-        throw childrenError;
+      if (sponseesError) {
+        console.error('Error fetching sponsees:', sponseesError);
+        throw sponseesError;
       }
 
       const childrenCount = sponseesData?.length || 0;
@@ -164,6 +170,75 @@ const AllStatistics: React.FC = () => {
         .map(([category, value]) => ({ category, value }))
         .sort((a, b) => b.value - a.value);
 
+      // Process gender distribution
+      const genderCounts = (sponseesData || []).reduce<Record<string, number>>(
+        (acc, sponsee) => {
+          const gender = sponsee.gender || 'Unknown';
+          acc[gender] = (acc[gender] || 0) + 1;
+          return acc;
+        },
+        {}
+      );
+
+      const genderDistribution = Object.entries(genderCounts).map(
+        ([gender, count]) => ({
+          gender,
+          count,
+        })
+      );
+
+      // Process age distribution
+      const ageGroups = (sponseesData || []).reduce<Record<string, number>>(
+        (acc, sponsee) => {
+          if (sponsee.date_of_birth) {
+            const age =
+              new Date().getFullYear() -
+              new Date(sponsee.date_of_birth).getFullYear();
+            const ageGroup =
+              age < 5
+                ? '0-4'
+                : age < 10
+                  ? '5-9'
+                  : age < 15
+                    ? '10-14'
+                    : age < 20
+                      ? '15-19'
+                      : '20+';
+            acc[ageGroup] = (acc[ageGroup] || 0) + 1;
+          }
+          return acc;
+        },
+        {}
+      );
+
+      const ageDistribution = Object.entries(ageGroups)
+        .map(([ageGroup, count]) => ({
+          ageGroup,
+          count,
+        }))
+        .sort((a, b) => {
+          const aStart = parseInt(a.ageGroup.split('-')[0]);
+          const bStart = parseInt(b.ageGroup.split('-')[0]);
+          return aStart - bStart;
+        });
+
+      // Process location distribution
+      const locationCounts = (sponseesData || []).reduce<
+        Record<string, number>
+      >((acc, sponsee) => {
+        const location = sponsee.location || 'Unknown';
+        acc[location] = (acc[location] || 0) + 1;
+        return acc;
+      }, {});
+
+      const locationDistribution = Object.entries(locationCounts)
+        .map(([location, count]) => ({
+          location,
+          count,
+        }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 10); // Top 10 locations
+
       console.log('Setting stats:', {
         totalSponsors: sponsorsCount,
         totalChildren: childrenCount,
@@ -172,6 +247,9 @@ const AllStatistics: React.FC = () => {
         sponsorshipsByCountry: sponsorshipsByCountryArray,
         donationsTrend: donationsTrendArray,
         impactBreakdown: impactBreakdownArray,
+        genderDistribution,
+        ageDistribution,
+        locationDistribution,
       });
 
       setStats({
@@ -182,6 +260,9 @@ const AllStatistics: React.FC = () => {
         sponsorshipsByCountry: sponsorshipsByCountryArray,
         donationsTrend: donationsTrendArray,
         impactBreakdown: impactBreakdownArray,
+        genderDistribution,
+        ageDistribution,
+        locationDistribution,
       });
     } catch (err) {
       console.error('Error in fetchStatistics:', err);
@@ -247,46 +328,102 @@ const AllStatistics: React.FC = () => {
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="donations">Donations</TabsTrigger>
-            <TabsTrigger value="impact">Impact</TabsTrigger>
+            <TabsTrigger value="demographics">Demographics</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-              <StatCard
-                title="Total Sponsors"
-                value={stats.totalSponsors}
-                color="text-blue-500"
-              />
-              <StatCard
-                title="Total Children Sponsored"
-                value={stats.totalChildren}
-                color="text-green-500"
-              />
-              <StatCard
-                title="Total Donations"
-                value={`$${stats.totalDonations.toFixed(2)}`}
-                color="text-purple-500"
-              />
-              <StatCard
-                title="Average Donation"
-                value={`$${stats.averageDonation.toFixed(2)}`}
-                color="text-orange-500"
-              />
+          <TabsContent value="overview" className="space-y-6">
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+              <Card className="p-6">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Total Sponsors
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-0">
+                  <div className="text-3xl font-bold text-blue-500">
+                    {stats.totalSponsors}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Active sponsors supporting children
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="p-6">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Children Sponsored
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-0">
+                  <div className="text-3xl font-bold text-green-500">
+                    {stats.totalChildren}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Total children receiving support
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="p-6">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Total Donations
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-0">
+                  <div className="text-3xl font-bold text-purple-500">
+                    ${stats.totalDonations.toFixed(2)}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Cumulative donations received
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="p-6">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    Average Monthly Donation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-0">
+                  <div className="text-3xl font-bold text-orange-500">
+                    ${stats.averageDonation.toFixed(2)}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Per sponsor monthly contribution
+                  </p>
+                </CardContent>
+              </Card>
             </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Sponsorships by Country</CardTitle>
+            {/* Donations Trend */}
+            <Card className="p-6">
+              <CardHeader className="px-0 pt-0">
+                <CardTitle>Donations by Month</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Monthly donation amounts over time
+                </p>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-0">
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={stats.sponsorshipsByCountry}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="Country" />
-                    <YAxis allowDecimals={false} />
+                  <BarChart data={stats.donationsTrend}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="month" axisLine={false} tickLine={false} />
+                    <YAxis
+                      allowDecimals={false}
+                      axisLine={false}
+                      tickLine={false}
+                    />
                     <Tooltip />
-                    <Legend />
-                    <Bar dataKey="count" fill="#82ca9d" />
+                    <Bar
+                      dataKey="amount"
+                      name="Amount"
+                      fill="#8884d8"
+                      radius={[4, 4, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -294,57 +431,179 @@ const AllStatistics: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="donations" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Donations Trend</CardTitle>
+            {/* Sponsorships by Country */}
+            <Card className="p-6">
+              <CardHeader className="px-0 pt-0">
+                <CardTitle>Sponsorships by Country</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Distribution of sponsors across different countries
+                </p>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-0">
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={stats.donationsTrend}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis allowDecimals={false} />
+                  <BarChart data={stats.sponsorshipsByCountry}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis
+                      dataKey="Country"
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      axisLine={false}
+                      tickLine={false}
+                    />
                     <Tooltip />
-                    <Legend />
-                    <Bar dataKey="amount" fill="#8884d8" />
+                    <Bar
+                      dataKey="count"
+                      name="Sponsors"
+                      fill="#4361ee"
+                      radius={[4, 4, 0, 0]}
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="impact" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Impact Breakdown (by Grade)</CardTitle>
-              </CardHeader>
-              <CardContent className="w-full aspect-[2/1]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={stats.impactBreakdown}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      outerRadius={'80%'}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ category, percent }) =>
-                        `${category} ${(percent * 100).toFixed(0)}%`
-                      }
+          <TabsContent value="demographics" className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Gender Distribution */}
+              <Card className="p-6">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle>Gender Distribution</CardTitle>
+                </CardHeader>
+                <CardContent className="px-0">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={stats.genderDistribution}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={120}
+                        fill="#8884d8"
+                        dataKey="count"
+                        nameKey="gender"
+                      >
+                        {stats.genderDistribution.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={index === 0 ? '#4361ee' : '#00C49F'}
+                          />
+                        ))}
+                      </Pie>
+                      <Legend
+                        verticalAlign="middle"
+                        align="left"
+                        layout="vertical"
+                        iconType="circle"
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Age Distribution */}
+              <Card className="p-6">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle>Age Distribution</CardTitle>
+                </CardHeader>
+                <CardContent className="px-0">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={stats.ageDistribution} barSize={40}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis
+                        dataKey="ageGroup"
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <YAxis axisLine={false} tickLine={false} />
+                      <Bar
+                        dataKey="count"
+                        fill="#82ca9d"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Grade Level Distribution */}
+              <Card className="p-6">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle>Grade Level Distribution</CardTitle>
+                </CardHeader>
+                <CardContent className="px-0">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={stats.impactBreakdown}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={120}
+                        fill="#8884d8"
+                        dataKey="value"
+                        nameKey="category"
+                      >
+                        {stats.impactBreakdown.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={COLORS[index % COLORS.length]}
+                          />
+                        ))}
+                      </Pie>
+                      <Legend
+                        verticalAlign="middle"
+                        align="right"
+                        layout="vertical"
+                        iconType="circle"
+                        formatter={(value) => `Grade ${value}`}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Location Distribution */}
+              <Card className="p-6">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle>Top Locations</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Distribution of children across different regions
+                  </p>
+                </CardHeader>
+                <CardContent className="px-0">
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart
+                      data={stats.locationDistribution}
+                      layout="vertical"
+                      barSize={20}
                     >
-                      {stats.impactBreakdown.map((entry, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        horizontal={true}
+                        vertical={false}
+                      />
+                      <XAxis type="number" axisLine={false} tickLine={false} />
+                      <YAxis
+                        dataKey="location"
+                        type="category"
+                        axisLine={false}
+                        tickLine={false}
+                        width={150}
+                      />
+                      <Bar
+                        dataKey="count"
+                        fill="#8884d8"
+                        radius={[0, 4, 4, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       )}
