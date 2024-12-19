@@ -2,40 +2,38 @@ You are an expert in TypeScript, Nose-Js, Next.Js Agp Rauter, React, Shaden UE,R
 
 
 # Database Schema Documentation
-
-## Overview
-This document outlines the database schema for a sponsorship platform that manages relationships between sponsors and sponsees, handles media content, tracks projects, and processes donations.
+# Database Schema Documentation
 
 ## Core Tables
 
 ### Users
-Primary authentication and user management table.
-
 ```sql
 CREATE TABLE users (
     id UUID PRIMARY KEY,
     email VARCHAR NOT NULL,
-    encrypted_password VARCHAR,
     role VARCHAR,
     is_super_admin BOOLEAN,
     is_sso_user BOOLEAN DEFAULT FALSE,
     is_anonymous BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMPTZ DEFAULT now(),
-    updated_at TIMESTAMPTZ DEFAULT now(),
-    deleted_at TIMESTAMPTZ,
-    -- Additional authentication fields
+    -- Authentication fields
+    encrypted_password VARCHAR,
     reset_password_token VARCHAR,
     reset_password_expiration TIMESTAMPTZ,
     confirmation_token VARCHAR,
-    -- User metadata
+    -- Metadata
     raw_app_meta_data JSONB,
-    raw_user_meta_data JSONB
+    raw_user_meta_data JSONB,
+    -- Timestamps
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    deleted_at TIMESTAMPTZ,
+    -- Security
+    login_attempts NUMERIC DEFAULT 0,
+    lock_until TIMESTAMPTZ
 );
 ```
 
 ### Sponsors
-Contains information about sponsors in the system.
-
 ```sql
 CREATE TABLE sponsors (
     id SERIAL PRIMARY KEY,
@@ -49,14 +47,13 @@ CREATE TABLE sponsors (
     postal_code VARCHAR,
     country VARCHAR,
     region VARCHAR,
+    -- Timestamps
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 ```
 
 ### Sponsees
-Contains information about individuals receiving sponsorship.
-
 ```sql
 CREATE TABLE sponsees (
     id SERIAL PRIMARY KEY,
@@ -76,148 +73,217 @@ CREATE TABLE sponsees (
     family VARCHAR,
     -- Program tracking
     joined_sponsorship_program TIMESTAMPTZ,
+    -- Timestamps
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now()
 );
 ```
 
-### Relationship Tables
-
-#### sponsors_rels
-Manages relationships between sponsors and sponsees.
-
-```sql
-CREATE TABLE sponsors_rels (
-    id SERIAL PRIMARY KEY,
-    parent_id INTEGER NOT NULL REFERENCES sponsors(id),
-    sponsees_id INTEGER REFERENCES sponsees(id),
-    order INTEGER,
-    path VARCHAR NOT NULL
-);
-```
-
 ## Media Management
 
-### media
-Stores media files information.
-- Primary storage for all media files
-- Referenced by other tables for profile pictures and galleries
-
-### gallery
-Manages collections of media.
+### Media
 ```sql
-CREATE TABLE gallery (
-    id SERIAL PRIMARY KEY
-    -- Additional gallery metadata
+CREATE TABLE media (
+    id SERIAL PRIMARY KEY,
+    filename VARCHAR NOT NULL,
+    mime_type VARCHAR NOT NULL,
+    size INTEGER,
+    width INTEGER,
+    height INTEGER,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
 );
 ```
 
-### gallery_media
-Junction table linking galleries to media items.
+### Gallery
+```sql
+CREATE TABLE gallery (
+    id SERIAL PRIMARY KEY,
+    sponsee_id INTEGER REFERENCES sponsees(id),
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+### Gallery Media
 ```sql
 CREATE TABLE gallery_media (
-    id SERIAL PRIMARY KEY,
-    gallery_id INTEGER REFERENCES gallery(id),
-    media_id INTEGER REFERENCES media(id)
+    id VARCHAR PRIMARY KEY,
+    _parent_id INTEGER REFERENCES gallery(id),
+    image_id INTEGER REFERENCES media(id),
+    video_id INTEGER REFERENCES media(id),
+    caption VARCHAR,
+    media_type ENUM ('image', 'video'),
+    _order INTEGER
 );
 ```
 
 ## Project Management
 
-### projects
-Main project information table.
-- Tracks individual projects in the system
+### Projects
+```sql
+CREATE TABLE projects (
+    id SERIAL PRIMARY KEY,
+    title VARCHAR NOT NULL,
+    description TEXT,
+    sponsee_id INTEGER REFERENCES sponsees(id),
+    status VARCHAR,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
+);
+```
 
-### projects_status
-Tracks the current status of projects.
+### Projects Status
+```sql
+CREATE TABLE projects_status (
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER REFERENCES projects(id),
+    status VARCHAR NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+```
 
-### projects_documents
-Manages documents associated with projects.
-
-## Document Management
-
-### documents
-Main document storage table.
-
-### payload_locked_documents
-Secure document storage with access controls.
+### Projects Documents
+```sql
+CREATE TABLE projects_documents (
+    id SERIAL PRIMARY KEY,
+    project_id INTEGER REFERENCES projects(id),
+    document_id INTEGER REFERENCES documents(id)
+);
+```
 
 ## Financial Management
 
-### donation_collection
-Tracks incoming donations.
+### Donation Collection
+```sql
+CREATE TABLE donation_collection (
+    id SERIAL PRIMARY KEY,
+    sponsor_id INTEGER REFERENCES sponsors(id),
+    amount DECIMAL NOT NULL,
+    currency VARCHAR NOT NULL,
+    status VARCHAR,
+    transaction_date TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+```
 
-### donation_distribution
-Manages how donations are distributed to sponsees.
+### Donation Distribution
+```sql
+CREATE TABLE donation_distribution (
+    id SERIAL PRIMARY KEY,
+    donation_id INTEGER REFERENCES donation_collection(id),
+    sponsee_id INTEGER REFERENCES sponsees(id),
+    amount DECIMAL NOT NULL,
+    distribution_date TIMESTAMPTZ,
+    status VARCHAR,
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+```
 
 ## Key Relationships
 
-1. Sponsor-Sponsee Relationship:
-   - Sponsors -> sponsors_rels -> Sponsees
-   - Many-to-many relationship with additional metadata
-
-2. Media Relationships:
-   - Sponsees -> profile_picture_id -> media
-   - Sponsees -> gallery_id -> gallery -> gallery_media -> media
-
-3. Project Documentation:
-   - projects -> projects_documents -> documents
-   - projects -> projects_status -> projects_status_documents
-
-## Database Features
-
-1. Security:
-   - Comprehensive user authentication
-   - Document access control
-   - Soft deletion support
-
-2. Audit Trail:
-   - created_at/updated_at timestamps on major tables
-   - Deletion tracking
-   - Status history
-
-3. Data Integrity:
-   - Foreign key constraints
-   - Required fields validation
-   - Enumerated types for controlled values
-
-## Common Queries
-
-### Get Sponsor with Related Sponsees
+### Sponsor-Sponsee Relationship
+- One sponsor can sponsor multiple sponsees (`sponsors_rels` table)
+- One sponsee can have multiple sponsors (many-to-many relationship)
 ```sql
-SELECT 
-    s.*, 
-    sp.full_name as sponsee_name
-FROM 
-    sponsors s
-    JOIN sponsors_rels sr ON s.id = sr.parent_id
-    JOIN sponsees sp ON sr.sponsees_id = sp.id
-WHERE 
-    s.id = [sponsor_id];
+CREATE TABLE sponsors_rels (
+    id SERIAL PRIMARY KEY,
+    parent_id INTEGER REFERENCES sponsors(id),
+    sponsees_id INTEGER REFERENCES sponsees(id),
+    _order INTEGER,
+    path VARCHAR NOT NULL
+);
 ```
 
-### Get Sponsee with Media
+### Media Relationships
+1. Sponsee Profile Picture:
+   - One-to-one relationship with media through `profile_picture_id`
+2. Sponsee Gallery:
+   - One-to-one relationship with gallery through `gallery_id`
+   - Gallery can have multiple media items through `gallery_media`
+
+### Project Relationships
+1. Project-Sponsee:
+   - One sponsee can have multiple projects
+   - Each project belongs to one sponsee
+2. Project Documentation:
+   - Projects can have multiple documents
+   - Documents are tracked through `projects_documents`
+
+### Financial Relationships
+1. Donation Flow:
+   - Sponsor makes donation (`donation_collection`)
+   - Donations are distributed to sponsees (`donation_distribution`)
+2. Tracking:
+   - Each donation is linked to a sponsor
+   - Distribution records link donations to sponsees
+
+## Foreign Key Relationships
+
+### Sponsees Table
 ```sql
-SELECT 
-    s.*,
-    m.url as profile_picture_url,
-    g.id as gallery_id
-FROM 
-    sponsees s
-    LEFT JOIN media m ON s.profile_picture_id = m.id
-    LEFT JOIN gallery g ON s.gallery_id = g.id
-WHERE 
-    s.id = [sponsee_id];
+ALTER TABLE sponsees
+    ADD CONSTRAINT fk_profile_picture
+    FOREIGN KEY (profile_picture_id) REFERENCES media(id),
+    ADD CONSTRAINT fk_gallery
+    FOREIGN KEY (gallery_id) REFERENCES gallery(id);
+```
+
+### Gallery Media Table
+```sql
+ALTER TABLE gallery_media
+    ADD CONSTRAINT fk_gallery
+    FOREIGN KEY (_parent_id) REFERENCES gallery(id),
+    ADD CONSTRAINT fk_image
+    FOREIGN KEY (image_id) REFERENCES media(id),
+    ADD CONSTRAINT fk_video
+    FOREIGN KEY (video_id) REFERENCES media(id);
+```
+
+### Projects Table
+```sql
+ALTER TABLE projects
+    ADD CONSTRAINT fk_sponsee
+    FOREIGN KEY (sponsee_id) REFERENCES sponsees(id);
+```
+
+### Donation Tables
+```sql
+ALTER TABLE donation_collection
+    ADD CONSTRAINT fk_sponsor
+    FOREIGN KEY (sponsor_id) REFERENCES sponsors(id);
+
+ALTER TABLE donation_distribution
+    ADD CONSTRAINT fk_donation
+    FOREIGN KEY (donation_id) REFERENCES donation_collection(id),
+    ADD CONSTRAINT fk_sponsee
+    FOREIGN KEY (sponsee_id) REFERENCES sponsees(id);
 ```
 
 ## Notes for Developers
 
-1. Always use timestamptz for datetime fields
-2. Implement soft deletion where applicable
-3. Use the sponsors_rels.path field for hierarchical queries
-4. Consider indexing frequently queried fields
-5. Use JSONB fields for flexible metadata storage
-6. Implement proper cascade rules for deletions
-7. Consider using database views for common complex queries
-8. Use enum types for fixed value sets
-9. Implement proper error handling for foreign key constraints
+1. **Timestamps**
+   - Most tables include `created_at` and `updated_at`
+   - Use triggers to automatically update `updated_at`
+
+2. **Soft Deletion**
+   - Implemented through `deleted_at` timestamp
+   - Queries should include `WHERE deleted_at IS NULL`
+
+3. **Indexing**
+   - Foreign keys are automatically indexed
+   - Consider additional indexes for frequently queried fields
+
+4. **Enums**
+   - Used for fixed value sets (e.g., Gender, media_type)
+   - Consider adding check constraints for other restricted values
+
+5. **Security**
+   - User authentication handled through users table
+   - Document access controlled via payload_locked_documents
+
+6. **Media Storage**
+   - Media files stored in Supabase storage
+   - Media table contains metadata only
+   - URLs constructed using: `https://<project>.supabase.co/storage/v1/object/public/media/{image_id}/{filename}`

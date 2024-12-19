@@ -21,9 +21,10 @@ export default async function ProtectedPage() {
     .single();
 
   if (sponsorError || !sponsor) {
+    console.error('Sponsor error:', sponsorError);
     return (
       <div className="flex-1 w-full flex flex-col gap-12 p-8">
-        <p>No sponsor data found.</p>
+        <p>No sponsor data found. {sponsorError?.message}</p>
       </div>
     );
   }
@@ -48,7 +49,7 @@ export default async function ProtectedPage() {
         how_sponsorship_will_help,
         family,
         joined_sponsorship_program,
-        Gender,
+        gender,
         profile_picture_id,
         gallery_id
       )
@@ -68,11 +69,19 @@ export default async function ProtectedPage() {
     );
   }
 
-  const sponseesList = sponseesRelData?.map((rel) => rel.sponsees) || [];
+  if (!sponseesRelData || sponseesRelData.length === 0) {
+    return (
+      <div className="flex-1 w-full flex flex-col gap-12 p-8">
+        <p>No sponsored children found for your account.</p>
+      </div>
+    );
+  }
+
+  const sponseesList = sponseesRelData.map((rel) => rel.sponsees) || [];
 
   // Collect all profile_picture_ids
   const profilePictureIds = sponseesList
-    .map((sponsee) => sponsee.profile_picture_id)
+    .map((sponsee) => sponsee?.profile_picture_id)
     .filter((id) => id != null);
 
   // Fetch media data for all profile_picture_ids
@@ -95,16 +104,20 @@ export default async function ProtectedPage() {
 
   // Attach profile_picture_url to each sponsee
   sponseesList.forEach((sponsee) => {
-    const filename = mediaMap[sponsee.profile_picture_id];
-    if (filename) {
-      sponsee.profile_picture_url = `https://ntckmekstkqxqgigqzgn.supabase.co/storage/v1/object/public/Media/media/${encodeURIComponent(
-        filename
-      )}`;
+    if (sponsee && sponsee.profile_picture_id) {
+      const filename = mediaMap[sponsee.profile_picture_id];
+      if (filename) {
+        sponsee.profile_picture_url = `https://ntckmekstkqxqgigqzgn.supabase.co/storage/v1/object/public/Media/media/${encodeURIComponent(
+          filename
+        )}`;
+      }
     }
   });
 
   // Fetch galleries for the sponsees
-  const sponseeIds = sponseesList.map((sponsee) => sponsee.id);
+  const sponseeIds = sponseesList
+    .map((sponsee) => sponsee?.id)
+    .filter((id) => id != null);
 
   const { data: galleriesData, error: galleriesError } = await supabase
     .from('gallery')
@@ -116,14 +129,16 @@ export default async function ProtectedPage() {
   }
 
   // Build a map from sponsee_id to gallery id
-  const galleryMap = galleriesData.reduce((acc, gallery) => {
+  const galleryMap = (galleriesData || []).reduce((acc, gallery) => {
     acc[gallery.sponsee_id] = gallery.id;
     return acc;
   }, {});
 
   // Attach gallery_id to each sponsee
   sponseesList.forEach((sponsee) => {
-    sponsee.gallery_id = galleryMap[sponsee.id];
+    if (sponsee) {
+      sponsee.gallery_id = galleryMap[sponsee.id];
+    }
   });
 
   return (
@@ -132,7 +147,7 @@ export default async function ProtectedPage() {
         sponseesList.map((child) => (
           <ChildDetails
             key={child.id}
-            child={{ ...child, gender: child.Gender || 'Unknown' }}
+            child={{ ...child, gender: child.gender || 'Unknown' }}
           />
         ))
       ) : (

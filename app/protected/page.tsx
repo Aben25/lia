@@ -59,48 +59,69 @@ const AllStatistics: React.FC = () => {
     try {
       const supabase = createClient();
 
-      // Fetch total sponsors
-      const { count: sponsorsCount, error: sponsorsError } = await supabase
-        .from('sponsors')
-        .select('*', { count: 'exact', head: true });
+      console.log('Fetching statistics...');
 
-      if (sponsorsError) throw sponsorsError;
+      // Fetch total sponsors
+      const { data: sponsorsData, error: sponsorsError } = await supabase
+        .from('sponsors')
+        .select('*');
+
+      if (sponsorsError) {
+        console.error('Error fetching sponsors:', sponsorsError);
+        throw sponsorsError;
+      }
+
+      const sponsorsCount = sponsorsData?.length || 0;
 
       // Fetch total children
-      const { count: childrenCount, error: childrenError } = await supabase
+      const { data: sponseesData, error: childrenError } = await supabase
         .from('sponsees')
-        .select('*', { count: 'exact', head: true });
+        .select('*');
 
-      if (childrenError) throw childrenError;
+      if (childrenError) {
+        console.error('Error fetching sponsees:', childrenError);
+        throw childrenError;
+      }
+
+      const childrenCount = sponseesData?.length || 0;
 
       // Fetch donations
-      const { data: donations, error: donationsError } = await supabase
-        .from('sponsors')
-        .select('amount, first_payment_date');
+      const { data: donationsData, error: donationsError } = await supabase
+        .from('donation_collection')
+        .select('*')
+        .order('donation_date', { ascending: false });
 
-      if (donationsError) throw donationsError;
+      if (donationsError) {
+        console.error('Error fetching donations:', donationsError);
+        throw donationsError;
+      }
 
-      const totalDonations = donations.reduce(
-        (sum, donation) => sum + (donation.amount || 0),
-        0
-      );
+      console.log('Donations data:', donationsData);
+
+      const totalDonations =
+        donationsData?.reduce(
+          (sum, donation) => sum + (Number(donation.donation_amount) || 0),
+          0
+        ) || 0;
+
       const averageDonation =
-        donations.length > 0 ? totalDonations / donations.length : 0;
+        donationsData && donationsData.length > 0
+          ? totalDonations / donationsData.length
+          : 0;
 
       // Process donations trend
-      const donationsTrend = donations.reduce<Record<string, number>>(
-        (acc, donation) => {
-          if (donation.first_payment_date) {
-            const date = new Date(donation.first_payment_date);
-            const month = date.toLocaleString('default', { month: 'short' });
-            const year = date.getFullYear();
-            const key = `${month} ${year}`;
-            acc[key] = (acc[key] || 0) + (donation.amount || 0);
-          }
-          return acc;
-        },
-        {}
-      );
+      const donationsTrend = (donationsData || []).reduce<
+        Record<string, number>
+      >((acc, donation) => {
+        if (donation.donation_date) {
+          const date = new Date(donation.donation_date);
+          const month = date.toLocaleString('default', { month: 'short' });
+          const year = date.getFullYear();
+          const key = `${month} ${year}`;
+          acc[key] = (acc[key] || 0) + (Number(donation.donation_amount) || 0);
+        }
+        return acc;
+      }, {});
 
       const donationsTrendArray = Object.entries(donationsTrend)
         .map(([month, amount]) => {
@@ -117,19 +138,12 @@ const AllStatistics: React.FC = () => {
         .sort((a, b) => a.date.getTime() - b.date.getTime())
         .map(({ month, amount }) => ({ month, amount }));
 
-      // Fetch sponsorships by country
-      const { data: sponsorsByCountry, error: countryError } = await supabase
-        .from('sponsors')
-        .select('country');
-
-      if (countryError) throw countryError;
-
-      const sponsorshipsByCountry = sponsorsByCountry.reduce<
+      // Process sponsorships by country
+      const sponsorshipsByCountry = (sponsorsData || []).reduce<
         Record<string, number>
       >((acc, sponsor) => {
-        if (sponsor.country) {
-          acc[sponsor.country] = (acc[sponsor.country] || 0) + 1;
-        }
+        const country = sponsor.country || 'Unknown';
+        acc[country] = (acc[country] || 0) + 1;
         return acc;
       }, {});
 
@@ -137,31 +151,32 @@ const AllStatistics: React.FC = () => {
         .map(([Country, count]) => ({ Country, count }))
         .sort((a, b) => b.count - a.count);
 
-      // For impact breakdown, we'll use the academic_progress field
-      const { data: sponseesProgress, error: progressError } = await supabase
-        .from('sponsees')
-        .select('academic_progress');
-
-      if (progressError) throw progressError;
-
-      const impactBreakdown = sponseesProgress.reduce<Record<string, number>>(
-        (acc, sponsee) => {
-          if (sponsee.academic_progress) {
-            acc[sponsee.academic_progress] =
-              (acc[sponsee.academic_progress] || 0) + 1;
-          }
-          return acc;
-        },
-        {}
-      );
+      // Process impact breakdown
+      const impactBreakdown = (sponseesData || []).reduce<
+        Record<string, number>
+      >((acc, sponsee) => {
+        const grade = sponsee.grade?.toString() || 'Unknown';
+        acc[grade] = (acc[grade] || 0) + 1;
+        return acc;
+      }, {});
 
       const impactBreakdownArray = Object.entries(impactBreakdown)
         .map(([category, value]) => ({ category, value }))
         .sort((a, b) => b.value - a.value);
 
+      console.log('Setting stats:', {
+        totalSponsors: sponsorsCount,
+        totalChildren: childrenCount,
+        totalDonations,
+        averageDonation,
+        sponsorshipsByCountry: sponsorshipsByCountryArray,
+        donationsTrend: donationsTrendArray,
+        impactBreakdown: impactBreakdownArray,
+      });
+
       setStats({
-        totalSponsors: sponsorsCount || 0,
-        totalChildren: childrenCount || 0,
+        totalSponsors: sponsorsCount,
+        totalChildren: childrenCount,
         totalDonations,
         averageDonation,
         sponsorshipsByCountry: sponsorshipsByCountryArray,
@@ -170,9 +185,13 @@ const AllStatistics: React.FC = () => {
       });
     } catch (err) {
       console.error('Error in fetchStatistics:', err);
-      setError(
-        `Failed to fetch statistics: ${err instanceof Error ? err.message : String(err)}`
-      );
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : err && typeof err === 'object' && 'message' in err
+            ? String(err.message)
+            : 'An unknown error occurred';
+      setError(`Failed to fetch statistics: ${errorMessage}`);
     } finally {
       setLoading(false);
     }

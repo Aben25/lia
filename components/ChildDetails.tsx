@@ -30,7 +30,6 @@ interface Child {
   date_of_birth?: string;
   grade?: string;
   gender?: string;
-  Gender?: string;
   profile_picture_url?: string;
   aspiration?: string;
   education?: string;
@@ -112,7 +111,7 @@ export default function Component({ child }: { child?: Child } = {}) {
                       className="w-full h-full object-cover"
                     />
                   </div>
-                  {child?.gallery_id && (
+                  {child?.id && (
                     <Link
                       href={`/protected/your-child/gallery/${child.id}`}
                       className="absolute -bottom-3 left-1/2 -translate-x-1/2"

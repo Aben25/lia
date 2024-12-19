@@ -14,6 +14,7 @@ import {
   Phone,
   LogOut,
   HelpCircle,
+  FolderKanban,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@assets/logo/white_main_transparent@600x.png';
@@ -88,6 +89,12 @@ const Sidebar = ({ className }: SidebarProps) => {
       icon: DollarSign,
       label: 'My Contributions',
       description: 'Track your donations and contributions',
+    },
+    {
+      href: '/protected/projects',
+      icon: FolderKanban,
+      label: 'Projects',
+      description: 'Manage your projects',
     },
   ];
 
