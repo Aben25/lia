@@ -58,6 +58,10 @@ export const signInAction = async (formData: FormData) => {
     return { error: error.message };
   }
 
+  if (!data?.session) {
+    return { error: 'No session created' };
+  }
+
   return redirect('/protected/your-child');
 };
 

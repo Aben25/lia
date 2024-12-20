@@ -194,7 +194,7 @@ const Sidebar = ({ className }: SidebarProps) => {
       {/* Mobile Menu Button */}
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className="lg:hidden fixed top-4 left-4 z-20 p-2"
+        className="lg:hidden fixed top-2 left-4 z-50 p-2"
         size="icon"
         variant="outline"
       >
@@ -204,27 +204,27 @@ const Sidebar = ({ className }: SidebarProps) => {
       {/* Sidebar */}
       <aside
         className={cn(
-          'bg-[#F08451] text-white w-64 flex flex-col fixed inset-y-0 left-0 transform z-10 transition-transform duration-300 ease-in-out lg:translate-x-0',
+          'bg-[#F08451] text-white w-64 flex flex-col fixed inset-y-0 left-0 transform z-50 transition-transform duration-300 ease-in-out lg:translate-x-0 overflow-y-auto',
           isOpen ? 'translate-x-0' : '-translate-x-full',
           className
         )}
       >
         {/* Logo */}
-        <div className="flex justify-center items-center h-24 px-6">
+        <div className="flex justify-center items-center h-16 px-4 sticky top-0 bg-[#F08451] z-10">
           <Image
             src={logo}
             alt="Love in Action"
-            width={160}
-            height={50}
+            width={120}
+            height={40}
             priority
             className="object-contain"
           />
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 space-y-4">
+        <nav className="flex-1 px-3 py-4 space-y-2 overflow-y-auto">
           {/* Notifications */}
-          <div className="mb-6">
+          <div className="mb-4">
             <DropdownMenu>
               <TooltipProvider>
                 <Tooltip>
@@ -232,29 +232,26 @@ const Sidebar = ({ className }: SidebarProps) => {
                     <DropdownMenuTrigger asChild>
                       <button
                         className={cn(
-                          'w-full flex items-center px-4 py-3 rounded-lg transition-colors duration-200 text-white hover:bg-white/10 relative group'
+                          'w-full flex items-center px-3 py-2 rounded-lg transition-colors duration-200 text-white hover:bg-white/10 relative group'
                         )}
                       >
-                        <Bell className="h-6 w-6 mr-3 text-white/80 group-hover:text-white" />
-                        <span className="text-base font-medium">
+                        <Bell className="h-5 w-5 mr-3 text-white/80 group-hover:text-white" />
+                        <span className="text-sm font-medium">
                           Notifications
                         </span>
                         {unreadCount > 0 && (
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 h-6 w-6 rounded-full bg-red-500 text-sm font-medium text-white flex items-center justify-center">
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-red-500 text-xs font-medium text-white flex items-center justify-center">
                             {unreadCount}
                           </span>
                         )}
                       </button>
                     </DropdownMenuTrigger>
                   </TooltipTrigger>
-                  <TooltipContent side="right">
-                    <p>View your notifications</p>
-                  </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
               <DropdownMenuContent
                 align="end"
-                className="w-[380px] max-h-[500px] overflow-y-auto"
+                className="w-[300px] lg:w-[380px] max-h-[80vh] overflow-y-auto"
               >
                 <DropdownMenuLabel className="py-3 px-4 text-lg font-semibold">
                   Notifications
@@ -333,15 +330,15 @@ const Sidebar = ({ className }: SidebarProps) => {
         </nav>
 
         {/* Help Section */}
-        <div className="p-4 mt-auto">
+        <div className="p-3 mt-auto sticky bottom-0 bg-[#F08451]">
           <Dialog>
             <DialogTrigger asChild>
               <Button
                 variant="ghost"
                 className="w-full justify-start text-white hover:bg-white/10 group"
               >
-                <HelpCircle className="h-6 w-6 mr-3 text-white/80 group-hover:text-white" />
-                <span className="text-base font-medium">Need Help?</span>
+                <HelpCircle className="h-5 w-5 mr-3 text-white/80 group-hover:text-white" />
+                <span className="text-sm font-medium">Need Help?</span>
               </Button>
             </DialogTrigger>
             <DialogContent>

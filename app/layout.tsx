@@ -24,62 +24,42 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={GeistSans.className} suppressHydrationWarning>
-      <body className="bg-background text-foreground">
+      <body className={`${GeistSans.className} bg-background text-foreground`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <div className="min-h-screen flex flex-1 flex-col items-center">
-            {/* Header */}
-            <header className="w-full flex justify-center border-b border-b-foreground/10 h-16">
-              <div className="w-full max-w-7xl flex justify-between items-center p-3 px-5 text-sm">
-                <div className="flex items-center gap-5">
-                  <ThemeSwitcher />
-                </div>
+          <div className="min-h-screen flex flex-col overflow-x-hidden">
+            {!hasEnvVars && <EnvVarWarning />}
 
-                <div className="flex items-center gap-4">
-                  <button className="p-2 rounded-full hover:bg-gray-100 transition-colors">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                      />
-                    </svg>
-                  </button>
-                  {!hasEnvVars ? <EnvVarWarning /> : <HeaderAuth />}
-                </div>
+            {/* Header */}
+            <header className="w-full border-b border-b-foreground/10 sticky top-0 z-40 bg-background">
+              <div className="w-full h-12 px-3 flex justify-end items-center gap-2">
+                <HeaderAuth />
+                <ThemeSwitcher />
               </div>
             </header>
 
             {/* Page Content */}
-            <main className="flex-1 place-content-center w-full max-w-6xl p-5 content-container flex-grow">
-              {children}
-            </main>
+            <main className="flex-1 w-full overflow-x-hidden">{children}</main>
 
             {/* Footer */}
-            <footer className="w-full flex items-center justify-center border-t text-center text-xs gap-8 py-16">
-              <p>
-                Powered by{' '}
-                <a
-                  href="https://loveinaction.co/"
-                  target="_blank"
-                  className="font-bold hover:underline"
-                  rel="noreferrer"
-                >
-                  Love in Action
-                </a>
-              </p>
-              <ThemeSwitcher />
+            <footer className="w-full border-t py-4">
+              <div className="w-full px-4 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Powered by{' '}
+                  <a
+                    href="https://loveinaction.co/"
+                    target="_blank"
+                    className="font-bold hover:underline"
+                    rel="noreferrer"
+                  >
+                    Love in Action
+                  </a>
+                </p>
+              </div>
             </footer>
           </div>
         </ThemeProvider>

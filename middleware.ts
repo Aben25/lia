@@ -2,7 +2,21 @@ import { type NextRequest } from 'next/server';
 import { updateSession } from '@/utils/supabase/middleware';
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+  const res = await updateSession(request);
+
+  const pathname = request.nextUrl.pathname;
+
+  // If we're on an auth page and we're authenticated, redirect to protected area
+  if (
+    (pathname === '/sign-in' ||
+      pathname === '/sign-up' ||
+      pathname === '/login') &&
+    !res.headers.get('location')
+  ) {
+    return res;
+  }
+
+  return res;
 }
 
 export const config = {

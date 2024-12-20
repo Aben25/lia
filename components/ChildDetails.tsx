@@ -89,7 +89,7 @@ export default function Component({ child }: { child?: Child } = {}) {
   }, []);
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-8 p-8">
+    <div className="w-full max-w-7xl mx-auto space-y-4 p-2 sm:p-4 md:p-8">
       {/* Header Section - Always visible */}
       <Card className="bg-[#1e1e2f] border-0 overflow-hidden">
         <CardContent className="p-0">
@@ -97,11 +97,11 @@ export default function Component({ child }: { child?: Child } = {}) {
             {/* Background Pattern */}
             <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10" />
 
-            <div className="relative p-8">
-              <div className="flex flex-col lg:flex-row items-start gap-8">
+            <div className="relative p-4 sm:p-6 md:p-8">
+              <div className="flex flex-col lg:flex-row items-start gap-6">
                 {/* Image Section */}
-                <div className="relative shrink-0">
-                  <div className="w-64 h-64 rounded-lg overflow-hidden ring-4 ring-white/10">
+                <div className="relative w-full lg:w-auto flex justify-center lg:block">
+                  <div className="w-48 h-48 sm:w-64 sm:h-64 rounded-lg overflow-hidden ring-4 ring-white/10">
                     <img
                       src={
                         child?.profile_picture_url ||
@@ -125,12 +125,12 @@ export default function Component({ child }: { child?: Child } = {}) {
                 </div>
 
                 {/* Info Section */}
-                <div className="flex-1 min-w-0">
-                  <h1 className="text-3xl font-bold text-white mb-6">
+                <div className="flex-1 min-w-0 w-full">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white mb-6 text-center lg:text-left">
                     {child?.full_name}
                   </h1>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                     <div className="flex items-center gap-3 text-gray-300">
                       <Calendar className="w-5 h-5 text-blue-400 shrink-0" />
                       <div>
@@ -176,105 +176,111 @@ export default function Component({ child }: { child?: Child } = {}) {
 
       {/* Tabbed Content */}
       <Tabs defaultValue="personal" className="w-full">
-        <TabsList className="w-full grid grid-cols-4">
+        <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 gap-1 p-1">
           <TabsTrigger value="personal" className="gap-2">
             <Info className="w-4 h-4" />
-            <span>Personal Details</span>
+            <span className="hidden sm:inline">Personal Details</span>
+            <span className="sm:hidden">Personal</span>
           </TabsTrigger>
           <TabsTrigger value="about" className="gap-2">
             <Heart className="w-4 h-4" />
-            <span>About</span>
+            <span className="hidden sm:inline">About</span>
+            <span className="sm:hidden">About</span>
           </TabsTrigger>
           <TabsTrigger value="sponsorship" className="gap-2">
             <BookOpen className="w-4 h-4" />
-            <span>Sponsorship Impact</span>
+            <span className="hidden sm:inline">Sponsorship Impact</span>
+            <span className="sm:hidden">Impact</span>
           </TabsTrigger>
           <TabsTrigger value="academic" className="gap-2">
             <LineChart className="w-4 h-4" />
-            <span>Academic Progress</span>
+            <span className="hidden sm:inline">Academic Progress</span>
+            <span className="sm:hidden">Academic</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="personal">
-          <Card className="dark:bg-gray-900 dark:border-gray-700">
-            <CardContent className="p-8">
-              <h2 className="text-2xl font-semibold text-blue-900 dark:text-blue-100 mb-6">
-                Personal Details
-              </h2>
-              <div className="space-y-6">
-                <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-blue-100 dark:border-gray-700">
-                  <h3 className="font-semibold text-lg mb-3 text-gray-900 dark:text-gray-100">
-                    Family
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    {child?.family}
-                  </p>
+        <div className="mt-4">
+          <TabsContent value="personal">
+            <Card className="dark:bg-gray-900 dark:border-gray-700">
+              <CardContent className="p-4 sm:p-6 md:p-8">
+                <h2 className="text-xl sm:text-2xl font-semibold text-blue-900 dark:text-blue-100 mb-4 sm:mb-6">
+                  Personal Details
+                </h2>
+                <div className="space-y-4">
+                  <div className="bg-gray-50 dark:bg-gray-800 p-4 sm:p-6 rounded-lg border border-blue-100 dark:border-gray-700">
+                    <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-100">
+                      Family
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      {child?.family}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-800 p-4 sm:p-6 rounded-lg border border-blue-100 dark:border-gray-700">
+                    <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-100">
+                      Aspiration
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      {child?.aspiration}
+                    </p>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-800 p-4 sm:p-6 rounded-lg border border-blue-100 dark:border-gray-700">
+                    <h3 className="font-semibold text-lg mb-2 text-gray-900 dark:text-gray-100">
+                      Hobby
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-300">
+                      {child?.hobby}
+                    </p>
+                  </div>
                 </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-blue-100 dark:border-gray-700">
-                  <h3 className="font-semibold text-lg mb-3 text-gray-900 dark:text-gray-100">
-                    Aspiration
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    {child?.aspiration}
-                  </p>
-                </div>
-                <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-blue-100 dark:border-gray-700">
-                  <h3 className="font-semibold text-lg mb-3 text-gray-900 dark:text-gray-100">
-                    Hobby
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-300">
-                    {child?.hobby}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="about">
-          <Card className="dark:bg-gray-900 dark:border-gray-700">
-            <CardContent className="p-8">
-              <h2 className="text-2xl font-semibold text-blue-900 dark:text-blue-100 mb-6">
-                About {child?.full_name?.split(' ')[0]}
-              </h2>
-              <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-blue-100 dark:border-gray-700">
-                <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line leading-relaxed">
-                  {child?.about}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="sponsorship">
-          <Card className="dark:bg-gray-900 dark:border-gray-700">
-            <CardContent className="p-8">
-              <h2 className="text-2xl font-semibold text-blue-900 dark:text-blue-100 mb-6">
-                How Sponsorship Will Help
-              </h2>
-              <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg border border-blue-100 dark:border-gray-700">
-                <div className="prose max-w-none text-gray-600 dark:text-gray-300">
-                  <p className="whitespace-pre-line leading-relaxed">
-                    {child?.how_sponsorship_will_help}
+          <TabsContent value="about">
+            <Card className="dark:bg-gray-900 dark:border-gray-700">
+              <CardContent className="p-4 sm:p-6 md:p-8">
+                <h2 className="text-xl sm:text-2xl font-semibold text-blue-900 dark:text-blue-100 mb-4 sm:mb-6">
+                  About {child?.full_name?.split(' ')[0]}
+                </h2>
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 sm:p-6 rounded-lg border border-blue-100 dark:border-gray-700">
+                  <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line leading-relaxed">
+                    {child?.about}
                   </p>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        <TabsContent value="academic">
-          <Card className="dark:bg-gray-900 dark:border-gray-700">
-            <CardContent className="p-8">
-              <h2 className="text-2xl font-semibold text-blue-900 dark:text-blue-100 mb-6">
-                Academic Performance
-              </h2>
-              <div className="bg-white dark:bg-gray-800 p-6 rounded-lg border border-blue-100 dark:border-gray-700">
-                <AcademicChart data={academicData} />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+          <TabsContent value="sponsorship">
+            <Card className="dark:bg-gray-900 dark:border-gray-700">
+              <CardContent className="p-4 sm:p-6 md:p-8">
+                <h2 className="text-xl sm:text-2xl font-semibold text-blue-900 dark:text-blue-100 mb-4 sm:mb-6">
+                  How Sponsorship Will Help
+                </h2>
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 sm:p-6 rounded-lg border border-blue-100 dark:border-gray-700">
+                  <div className="prose max-w-none text-gray-600 dark:text-gray-300">
+                    <p className="whitespace-pre-line leading-relaxed">
+                      {child?.how_sponsorship_will_help}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="academic">
+            <Card className="dark:bg-gray-900 dark:border-gray-700">
+              <CardContent className="p-4 sm:p-6 md:p-8">
+                <h2 className="text-xl sm:text-2xl font-semibold text-blue-900 dark:text-blue-100 mb-4 sm:mb-6">
+                  Academic Performance
+                </h2>
+                <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg border border-blue-100 dark:border-gray-700">
+                  <AcademicChart data={academicData} />
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </div>
       </Tabs>
     </div>
   );

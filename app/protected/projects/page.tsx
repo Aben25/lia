@@ -189,12 +189,16 @@ export default function Projects() {
                 <div className="relative h-64 md:w-72 w-full">
                   {project.profile_picture ? (
                     <Image
-                      src={`https://ntckmekstkqxqgigqzgn.supabase.co/storage/v1/object/public/Media/${project.profile_picture.filename}`}
+                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/Media/${project.profile_picture.filename}`}
                       alt={project.project_title}
                       fill
                       className="object-cover"
                       sizes="(max-width: 768px) 100vw, 288px"
-                      unoptimized
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/placeholder.jpg'; // Fallback image
+                        target.onerror = null; // Prevent infinite loop
+                      }}
                     />
                   ) : (
                     <div className="w-full h-full bg-muted flex items-center justify-center">

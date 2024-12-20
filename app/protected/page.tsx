@@ -467,107 +467,117 @@ const AllStatistics: React.FC = () => {
           </TabsContent>
 
           <TabsContent value="demographics" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Gender Distribution */}
-              <Card className="p-6">
+              <Card className="p-4 sm:p-6">
                 <CardHeader className="px-0 pt-0">
                   <CardTitle>Gender Distribution</CardTitle>
                 </CardHeader>
                 <CardContent className="px-0">
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={stats.genderDistribution}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={120}
-                        fill="#8884d8"
-                        dataKey="count"
-                        nameKey="gender"
-                      >
-                        {stats.genderDistribution.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={index === 0 ? '#4361ee' : '#00C49F'}
-                          />
-                        ))}
-                      </Pie>
-                      <Legend
-                        verticalAlign="middle"
-                        align="left"
-                        layout="vertical"
-                        iconType="circle"
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <div className="h-[300px] sm:h-[400px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={stats.genderDistribution}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius={100}
+                          fill="#8884d8"
+                          dataKey="count"
+                          nameKey="gender"
+                        >
+                          {stats.genderDistribution.map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={index === 0 ? '#4361ee' : '#00C49F'}
+                            />
+                          ))}
+                        </Pie>
+                        <Legend
+                          verticalAlign="bottom"
+                          align="center"
+                          layout="horizontal"
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Age Distribution */}
-              <Card className="p-6">
+              <Card className="p-4 sm:p-6">
                 <CardHeader className="px-0 pt-0">
                   <CardTitle>Age Distribution</CardTitle>
                 </CardHeader>
                 <CardContent className="px-0">
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={stats.ageDistribution} barSize={40}>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                      <XAxis
-                        dataKey="ageGroup"
-                        axisLine={false}
-                        tickLine={false}
-                      />
-                      <YAxis axisLine={false} tickLine={false} />
-                      <Bar
-                        dataKey="count"
-                        fill="#82ca9d"
-                        radius={[4, 4, 0, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div className="h-[300px] sm:h-[400px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={stats.ageDistribution} barSize={40}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                        <XAxis
+                          dataKey="ageGroup"
+                          axisLine={false}
+                          tickLine={false}
+                          fontSize={12}
+                        />
+                        <YAxis
+                          axisLine={false}
+                          tickLine={false}
+                          fontSize={12}
+                        />
+                        <Tooltip />
+                        <Bar
+                          dataKey="count"
+                          fill="#82ca9d"
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Grade Level Distribution */}
-              <Card className="p-6">
+              <Card className="p-4 sm:p-6">
                 <CardHeader className="px-0 pt-0">
                   <CardTitle>Grade Level Distribution</CardTitle>
                 </CardHeader>
                 <CardContent className="px-0">
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={stats.impactBreakdown}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={120}
-                        fill="#8884d8"
-                        dataKey="value"
-                        nameKey="category"
-                      >
-                        {stats.impactBreakdown.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={COLORS[index % COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Legend
-                        verticalAlign="middle"
-                        align="right"
-                        layout="vertical"
-                        iconType="circle"
-                        formatter={(value) => `Grade ${value}`}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <div className="h-[300px] sm:h-[400px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={stats.impactBreakdown}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          outerRadius={100}
+                          fill="#8884d8"
+                          dataKey="value"
+                          nameKey="category"
+                        >
+                          {stats.impactBreakdown.map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={COLORS[index % COLORS.length]}
+                            />
+                          ))}
+                        </Pie>
+                        <Legend
+                          verticalAlign="bottom"
+                          align="center"
+                          layout="horizontal"
+                          formatter={(value) => `Grade ${value}`}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Location Distribution */}
-              <Card className="p-6">
+              <Card className="p-4 sm:p-6">
                 <CardHeader className="px-0 pt-0">
                   <CardTitle>Top Locations</CardTitle>
                   <p className="text-sm text-muted-foreground">
@@ -575,32 +585,52 @@ const AllStatistics: React.FC = () => {
                   </p>
                 </CardHeader>
                 <CardContent className="px-0">
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart
-                      data={stats.locationDistribution}
-                      layout="vertical"
-                      barSize={20}
-                    >
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        horizontal={true}
-                        vertical={false}
-                      />
-                      <XAxis type="number" axisLine={false} tickLine={false} />
-                      <YAxis
-                        dataKey="location"
-                        type="category"
-                        axisLine={false}
-                        tickLine={false}
-                        width={150}
-                      />
-                      <Bar
-                        dataKey="count"
-                        fill="#8884d8"
-                        radius={[0, 4, 4, 0]}
-                      />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <div className="h-[300px] sm:h-[400px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={stats.locationDistribution}
+                        layout="vertical"
+                        barSize={20}
+                        margin={{ left: 150, right: 20, top: 10, bottom: 10 }}
+                      >
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          horizontal={true}
+                          vertical={false}
+                        />
+                        <XAxis
+                          type="number"
+                          axisLine={false}
+                          tickLine={false}
+                          fontSize={12}
+                          tickFormatter={(value) => String(Math.round(value))}
+                        />
+                        <YAxis
+                          dataKey="location"
+                          type="category"
+                          axisLine={false}
+                          tickLine={false}
+                          width={140}
+                          fontSize={12}
+                          tickFormatter={(value) => {
+                            // Truncate long location names
+                            return value.length > 25
+                              ? value.substring(0, 25) + '...'
+                              : value;
+                          }}
+                        />
+                        <Tooltip
+                          formatter={(value, name) => [value, 'Children']}
+                          labelFormatter={(label) => `Location: ${label}`}
+                        />
+                        <Bar
+                          dataKey="count"
+                          fill="#8884d8"
+                          radius={[0, 4, 4, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
                 </CardContent>
               </Card>
             </div>

@@ -155,9 +155,7 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
         order: item._order,
         mediaId: item.image_id,
         filename: item.media.filename,
-        url: `https://ntckmekstkqxqgigqzgn.supabase.co/storage/v1/object/public/Media/media/${encodeURIComponent(
-          item.media.filename
-        )}`,
+        url: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/Media/${item.media.filename}`,
       }))
       .sort((a, b) => a.order - b.order);
   };
@@ -225,13 +223,16 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
               <CardContent>
                 <div className="relative aspect-video overflow-hidden rounded-lg">
                   <Image
-                    src={`https://ntckmekstkqxqgigqzgn.supabase.co/storage/v1/object/public/Media/media/${encodeURIComponent(
-                      project.profile_picture.filename
-                    )}`}
+                    src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/Media/${project.profile_picture.filename}`}
                     alt={project.project_title}
                     fill
                     className="object-cover"
                     priority
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = '/placeholder.jpg';
+                      target.onerror = null;
+                    }}
                   />
                 </div>
               </CardContent>
@@ -259,6 +260,11 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
                         alt={image.caption || 'Gallery image'}
                         fill
                         className="object-cover transition-transform group-hover:scale-105"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.jpg';
+                          target.onerror = null;
+                        }}
                       />
                       {image.caption && (
                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
@@ -379,6 +385,11 @@ export default function ProjectDetails({ params }: { params: { id: string } }) {
                 fill
                 className="object-contain"
                 priority
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder.jpg';
+                  target.onerror = null;
+                }}
               />
             </div>
           )}
