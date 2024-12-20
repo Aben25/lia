@@ -201,23 +201,27 @@ export default function GalleryPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="container mx-auto py-10 px-4">
       <h1 className="text-3xl font-bold mb-8">Gallery</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {images.map((image) => (
           <Card key={image.id} className="overflow-hidden">
-            <div className="aspect-square relative">
+            <div className="relative" style={{ paddingTop: '75%' }}>
               <Image
                 src={image.url}
                 alt={image.caption || `Image ${image.filename}`}
                 fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover hover:scale-105 transition-transform duration-300"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                quality={95}
+                priority
               />
             </div>
             {image.caption && (
               <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground">{image.caption}</p>
+                <p className="text-base text-muted-foreground">
+                  {image.caption}
+                </p>
               </CardContent>
             )}
           </Card>

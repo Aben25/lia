@@ -1,6 +1,5 @@
-import Image from 'next/image';
 import Link from 'next/link';
-import { Card } from '@/components/ui/card';
+import Image from 'next/image';
 
 export default function AuthLayout({
   children,
@@ -8,24 +7,35 @@ export default function AuthLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex-1 flex flex-col max-w-screen-xl mx-auto px-4 gap-8 py-8">
-      {/* Logo */}
-      <div className="flex justify-center">
-        <Link href="/" className="flex items-center gap-2">
-          <Image
-            src="/logo.png"
-            alt="Love in Action"
-            width={180}
-            height={60}
-            className="dark:invert"
-            priority
-          />
-        </Link>
+    <div className="container relative min-h-screen flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+      <div className="relative hidden h-full flex-col bg-muted p-10 text-white lg:flex dark:border-r">
+        <div className="absolute inset-0 bg-zinc-900" />
+        <div className="relative z-20 flex items-center text-lg font-medium">
+          <Link href="/">
+            <Image
+              src="/logo.png"
+              alt="Logo"
+              width={150}
+              height={50}
+              priority
+              className="dark:invert"
+            />
+          </Link>
+        </div>
+        <div className="relative z-20 mt-auto">
+          <blockquote className="space-y-2">
+            <p className="text-lg">
+              "This library has completely transformed how we handle our
+              documentation. It's incredibly powerful yet easy to use."
+            </p>
+            <footer className="text-sm">Sofia Davis</footer>
+          </blockquote>
+        </div>
       </div>
-
-      {/* Auth Form Container */}
-      <div className="flex-1 flex justify-center items-center">
-        <Card className="w-full max-w-[400px] p-6">{children}</Card>
+      <div className="lg:p-8">
+        <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+          {children}
+        </div>
       </div>
     </div>
   );

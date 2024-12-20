@@ -22,6 +22,7 @@
     ]
   },
   "dependencies": {
+    "@hookform/resolvers": "^3.9.1",
     "@onlook/nextjs": "^2.1.1",
     "@radix-ui/react-avatar": "^1.1.0",
     "@radix-ui/react-checkbox": "^1.1.1",
@@ -54,11 +55,13 @@
     "react": "18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "18.2.0",
+    "react-hook-form": "^7.54.2",
     "react-remove-scroll": "^2.6.1",
     "recharts": "^2.15.0",
     "sharp": "^0.33.5",
     "stream-chat": "^8.48.0",
     "stream-chat-react": "^12.8.1",
+    "zod": "^3.24.1",
     "zustand": "^4.5.5"
   },
   "devDependencies": {

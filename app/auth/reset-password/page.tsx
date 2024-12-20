@@ -6,6 +6,12 @@ import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  ResetPasswordFormData,
+  resetPasswordSchema,
+} from '@/lib/validations/auth';
 
 export default function ResetPassword() {
   const router = useRouter();
@@ -13,16 +19,22 @@ export default function ResetPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [email, setEmail] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+  });
+
+  const onSubmit = async (data: ResetPasswordFormData) => {
     try {
       setIsLoading(true);
       setError(null);
       setSuccess(false);
 
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
         redirectTo: `${window.location.origin}/auth/callback`,
       });
 
@@ -51,7 +63,7 @@ export default function ResetPassword() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
           <label
             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -63,11 +75,12 @@ export default function ResetPassword() {
             id="email"
             type="email"
             placeholder="you@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full"
+            {...register('email')}
+            className={errors.email ? 'border-red-500' : ''}
           />
+          {errors.email && (
+            <p className="text-sm text-red-500">{errors.email.message}</p>
+          )}
         </div>
 
         {error && (

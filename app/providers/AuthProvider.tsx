@@ -23,19 +23,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const getSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        setSession(session);
+        setUser(session?.user ?? null);
+      } catch (error) {
+        console.error('Error getting session:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     getSession();
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
@@ -48,8 +53,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [router, supabase]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    router.push('/');
+    try {
+      await supabase.auth.signOut();
+      router.push('/');
+      router.refresh();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   const value = {
