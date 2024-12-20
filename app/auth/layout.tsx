@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import { Card } from '@/components/ui/card';
 
 export default function AuthLayout({
   children,
@@ -24,9 +25,7 @@ export default function AuthLayout({
 
       {/* Auth Form Container */}
       <div className="flex-1 flex justify-center items-center">
-        <div className="w-full max-w-[400px] p-6 bg-card rounded-lg border shadow-sm">
-          {children}
-        </div>
+        <Card className="w-full max-w-[400px] p-6">{children}</Card>
       </div>
     </div>
   );
