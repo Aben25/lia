@@ -1,67 +1,36 @@
-import { signOutAction } from '@/app/actions';
-import { hasEnvVars } from '@/utils/supabase/check-env-vars';
+'use client';
+
+import { useAuth } from '../app/providers/AuthProvider';
 import Link from 'next/link';
-import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { createClient } from '@/utils/supabase/server';
 
-export default async function AuthButton() {
-  const {
-    data: { user },
-  } = await createClient().auth.getUser();
+export default function HeaderAuth() {
+  const { user, signOut, isLoading } = useAuth();
 
-  if (!hasEnvVars) {
+  if (isLoading) {
     return (
-      <>
-        <div className="flex gap-4 items-center">
-          <div>
-            <Badge
-              variant={'default'}
-              className="font-normal pointer-events-none"
-            >
-              Please update .env.local file with anon key and url
-            </Badge>
-          </div>
-          <div className="flex gap-2">
-            <Button
-              asChild
-              size="sm"
-              variant={'outline'}
-              disabled
-              className="opacity-75 cursor-none pointer-events-none"
-            >
-              <Link href="/sign-in">Sign in</Link>
-            </Button>
-            <Button
-              asChild
-              size="sm"
-              variant={'default'}
-              disabled
-              className="opacity-75 cursor-none pointer-events-none"
-            >
-              <Link href="/sign-up">Sign up</Link>
-            </Button>
-          </div>
-        </div>
-      </>
+      <div className="flex gap-2">
+        <Button size="sm" variant="ghost" disabled>
+          Loading...
+        </Button>
+      </div>
     );
   }
+
   return user ? (
     <div className="flex items-center gap-4">
-      Hey, {user.email}!
-      <form action={signOutAction}>
-        <Button type="submit" variant={'outline'}>
-          Sign out
-        </Button>
-      </form>
+      <span className="text-sm text-muted-foreground">{user.email}</span>
+      <Button onClick={() => signOut()} size="sm" variant="outline">
+        Sign out
+      </Button>
     </div>
   ) : (
     <div className="flex gap-2">
-      <Button asChild size="sm" variant={'outline'}>
-        <Link href="/sign-in">Sign in</Link>
+      <Button asChild size="sm" variant="outline">
+        <Link href="/auth/sign-in">Sign in</Link>
       </Button>
-      <Button asChild size="sm" variant={'default'}>
-        <Link href="/sign-up">Sign up</Link>
+      <Button asChild size="sm" variant="default">
+        <Link href="/auth/sign-up">Sign up</Link>
       </Button>
     </div>
   );

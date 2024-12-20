@@ -15,12 +15,20 @@ import {
   LineChart,
   Calendar,
   ImageIcon,
+  MessageCircle,
+  X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import AcademicChart from './AcademicChart';
 import { format, parseISO } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+
+declare global {
+  interface Window {
+    Zeffy: any;
+  }
+}
 
 interface Child {
   id?: number;
@@ -36,7 +44,7 @@ interface Child {
   hobby?: string;
   how_sponsorship_will_help?: string;
   family?: string;
-  joined_sponsorship_program?: string;
+  joined_sponsorship_date?: string;
   gallery_id?: number;
 }
 
@@ -63,6 +71,8 @@ export default function Component({ child }: { child?: Child } = {}) {
       Geography: number;
     }[]
   >([]);
+
+  const [showDonationModal, setShowDonationModal] = useState(false);
 
   useEffect(() => {
     const data = Array.from({ length: 10 }, (_, i) => ({
@@ -104,11 +114,14 @@ export default function Component({ child }: { child?: Child } = {}) {
                   <div className="w-48 h-48 sm:w-64 sm:h-64 rounded-lg overflow-hidden ring-4 ring-white/10">
                     <img
                       src={
-                        child?.profile_picture_url ||
-                        '/placeholder.svg?height=256&width=256'
+                        child?.profile_picture_url || '/placeholder-profile.jpg'
                       }
-                      alt={child?.full_name}
+                      alt={`${child?.full_name}'s profile picture`}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/placeholder-profile.jpg';
+                      }}
                     />
                   </div>
                   {child?.id && (
@@ -154,7 +167,7 @@ export default function Component({ child }: { child?: Child } = {}) {
                       <div>
                         <p className="text-sm text-gray-400">Joined Program</p>
                         <p className="font-medium">
-                          {formatDate(child?.joined_sponsorship_program)}
+                          {formatDate(child?.joined_sponsorship_date)}
                         </p>
                       </div>
                     </div>
@@ -174,9 +187,51 @@ export default function Component({ child }: { child?: Child } = {}) {
         </CardContent>
       </Card>
 
+      {/* Donation Button */}
+      <div className="flex justify-center mt-4">
+        <button
+          className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition-colors flex items-center gap-2"
+          onClick={() => setShowDonationModal(true)}
+        >
+          <Plus className="w-5 h-5" />
+          Make a one-time donation
+        </button>
+      </div>
+
+      {/* Donation Modal */}
+      {showDonationModal && (
+        <div
+          className="fixed top-0 left-0 right-0 bottom-0 bg-black/70 z-[9999] flex items-center justify-center p-4 cursor-pointer overflow-hidden"
+          onClick={() => setShowDonationModal(false)}
+          style={{ position: 'fixed', minHeight: '100vh', minWidth: '100vw' }}
+        >
+          <div
+            className="bg-white w-full max-w-3xl rounded-xl shadow-2xl relative cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Make a one-time donation for {child?.full_name}
+              </h2>
+              <button
+                onClick={() => setShowDonationModal(false)}
+                className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 z-10"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <iframe
+              title="Donation form powered by Zeffy"
+              src="https://www.zeffy.com/embed/donation-form/make-a-one-time-donation-for-your-sponsee"
+              className="w-full h-[600px]"
+            />
+          </div>
+        </div>
+      )}
+
       {/* Tabbed Content */}
       <Tabs defaultValue="personal" className="w-full">
-        <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 gap-1 p-1">
+        <TabsList className="w-full grid grid-cols-2 md:grid-cols-5 gap-1 p-1">
           <TabsTrigger value="personal" className="gap-2">
             <Info className="w-4 h-4" />
             <span className="hidden sm:inline">Personal Details</span>
@@ -196,6 +251,12 @@ export default function Component({ child }: { child?: Child } = {}) {
             <LineChart className="w-4 h-4" />
             <span className="hidden sm:inline">Academic Progress</span>
             <span className="sm:hidden">Academic</span>
+          </TabsTrigger>
+          <TabsTrigger value="messages" className="gap-2" disabled>
+            <MessageCircle className="w-4 h-4" />
+            <span className="hidden sm:inline">Messages</span>
+            <span className="sm:hidden">Messages</span>
+            <span className="text-xs text-blue-400">(Coming Soon)</span>
           </TabsTrigger>
         </TabsList>
 
@@ -277,6 +338,21 @@ export default function Component({ child }: { child?: Child } = {}) {
                 <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-lg border border-blue-100 dark:border-gray-700">
                   <AcademicChart data={academicData} />
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="messages">
+            <Card className="dark:bg-gray-900 dark:border-gray-700">
+              <CardContent className="p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center min-h-[300px]">
+                <MessageCircle className="w-12 h-12 text-gray-400 mb-4" />
+                <h2 className="text-xl sm:text-2xl font-semibold text-gray-400 mb-2">
+                  Messages Coming Soon
+                </h2>
+                <p className="text-gray-500 text-center">
+                  Direct messaging with your sponsored child will be available
+                  soon.
+                </p>
               </CardContent>
             </Card>
           </TabsContent>

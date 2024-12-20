@@ -5,7 +5,9 @@ import { ThemeSwitcher } from '@/components/theme-switcher';
 import { hasEnvVars } from '@/utils/supabase/check-env-vars';
 import { GeistSans } from 'geist/font/sans';
 import { ThemeProvider } from 'next-themes';
+import Script from 'next/script';
 import './globals.css';
+import { AuthProvider } from './providers/AuthProvider';
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -24,6 +26,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={GeistSans.className} suppressHydrationWarning>
+      <head>
+        <Script
+          src="https://zeffy-scripts.s3.ca-central-1.amazonaws.com/embed-form-script.min.js"
+          strategy="afterInteractive"
+        />
+      </head>
       <body className={`${GeistSans.className} bg-background text-foreground`}>
         <ThemeProvider
           attribute="class"
@@ -31,37 +39,41 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="min-h-screen flex flex-col overflow-x-hidden">
-            {!hasEnvVars && <EnvVarWarning />}
+          <AuthProvider>
+            <div className="min-h-screen flex flex-col">
+              {!hasEnvVars && <EnvVarWarning />}
 
-            {/* Header */}
-            <header className="w-full border-b border-b-foreground/10 sticky top-0 z-40 bg-background">
-              <div className="w-full h-12 px-3 flex justify-end items-center gap-2">
-                <HeaderAuth />
-                <ThemeSwitcher />
-              </div>
-            </header>
+              {/* Header */}
+              <header className="w-full border-b border-b-foreground/10 sticky top-0 z-40 bg-background">
+                <div className="w-full h-12 px-3 flex justify-end items-center gap-2">
+                  <HeaderAuth />
+                  <ThemeSwitcher />
+                </div>
+              </header>
 
-            {/* Page Content */}
-            <main className="flex-1 w-full overflow-x-hidden">{children}</main>
+              {/* Page Content */}
+              <main className="flex-1 flex flex-col items-center justify-center">
+                {children}
+              </main>
 
-            {/* Footer */}
-            <footer className="w-full border-t py-4">
-              <div className="w-full px-4 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Powered by{' '}
-                  <a
-                    href="https://loveinaction.co/"
-                    target="_blank"
-                    className="font-bold hover:underline"
-                    rel="noreferrer"
-                  >
-                    Love in Action
-                  </a>
-                </p>
-              </div>
-            </footer>
-          </div>
+              {/* Footer */}
+              <footer className="w-full border-t py-4">
+                <div className="w-full px-4 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Powered by{' '}
+                    <a
+                      href="https://loveinaction.co/"
+                      target="_blank"
+                      className="font-bold hover:underline"
+                      rel="noreferrer"
+                    >
+                      Love in Action
+                    </a>
+                  </p>
+                </div>
+              </footer>
+            </div>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

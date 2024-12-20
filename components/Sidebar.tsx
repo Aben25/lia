@@ -16,6 +16,7 @@ import {
   HelpCircle,
   FolderKanban,
   Bell,
+  MessageCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@assets/logo/white_main_transparent@600x.png';
@@ -297,35 +298,29 @@ const Sidebar = ({ className }: SidebarProps) => {
           </div>
 
           {navItems.map((item) => (
-            <TooltipProvider key={item.href}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link
-                    href={item.href}
-                    className={cn(
-                      'flex items-center px-4 py-3 rounded-lg transition-colors duration-200 group',
-                      pathname === item.href
-                        ? 'bg-[#4361ee] text-white'
-                        : 'text-white hover:bg-white/10'
-                    )}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <item.icon
-                      className={cn(
-                        'h-6 w-6 mr-3',
-                        pathname === item.href
-                          ? 'text-white'
-                          : 'text-white/80 group-hover:text-white'
-                      )}
-                    />
-                    <span className="text-base font-medium">{item.label}</span>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  <p>{item.description}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={(e) => {
+                console.log('Navigation item clicked:', item.label);
+                console.log('Target href:', item.href);
+                setIsOpen(false); // Close mobile menu after click
+              }}
+              className={cn(
+                'flex items-center gap-3 rounded-lg px-3 py-2 text-white transition-all hover:text-white hover:bg-white/10',
+                pathname === item.href ? 'bg-white/10' : 'text-white/70'
+              )}
+            >
+              <item.icon className="h-5 w-5" />
+              <div>
+                <div className="text-sm font-medium">{item.label}</div>
+                {item.description && (
+                  <div className="text-xs text-white/70">
+                    {item.description}
+                  </div>
+                )}
+              </div>
+            </Link>
           ))}
         </nav>
 

@@ -23,40 +23,67 @@ export default function Login() {
   };
 
   return (
-    <form className="flex-1 flex flex-col w-full sm:max-w-xs mx-0" action={handleSubmit}>
-      <h1 className="text-2xl font-medium text-center">Sign in</h1>
-      <p className="text-sm text-foreground text-center">
-        Don't have an account?{' '}
-        <Link className="text-foreground font-medium underline" href="/sign-up">
-          Sign up
-        </Link>
-      </p>
-      <div className="flex flex-col gap-2 [&>input]:mb-3 [&>input]:text-base [&>input]:p-4 [&>input]:h-10  mt-8">
-        <Label htmlFor="email">Email</Label>
-        <Input name="email" placeholder="you@example.com" required />
-        <div className="flex justify-between items-center">
-          <Label htmlFor="password">Password</Label>
-          <Link
-            className="text-xs text-foreground underline"
-            href="/forgot-password"
-          >
-            Forgot Password?
-          </Link>
+    <div className="flex min-h-[80vh] flex-col items-center justify-center">
+      <div className="w-full max-w-sm space-y-6 px-4">
+        <div className="flex flex-col space-y-2 text-center">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Welcome back
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Don't have an account?{' '}
+            <Link
+              className="text-primary font-medium hover:underline"
+              href="/sign-up"
+            >
+              Sign up
+            </Link>
+          </p>
         </div>
-        <Input
-          type="password"
-          name="password"
-          placeholder="Your password"
-          required
-        />
-        <SubmitButton
-          className="text-base h-14 sm:h-11 mt-2"
-          pendingText="Signing In..."
-        >
-          Sign in
-        </SubmitButton>
-        {error && <FormMessage message={{ error: error }} />}
+
+        <form className="space-y-4" action={handleSubmit}>
+          <div className="space-y-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              required
+              className="w-full"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <Link
+                className="text-sm text-primary hover:underline"
+                href="/forgot-password"
+              >
+                Forgot password?
+              </Link>
+            </div>
+            <Input
+              id="password"
+              type="password"
+              name="password"
+              placeholder="Enter your password"
+              required
+              className="w-full"
+            />
+          </div>
+
+          <SubmitButton
+            formAction={handleSubmit}
+            pendingText="Signing in..."
+            className="w-full"
+          >
+            Sign in
+          </SubmitButton>
+
+          {error && <FormMessage message={{ error: error }} />}
+        </form>
       </div>
-    </form>
+    </div>
   );
 }

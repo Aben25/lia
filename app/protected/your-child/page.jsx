@@ -48,7 +48,7 @@ export default async function ProtectedPage() {
         about,
         how_sponsorship_will_help,
         family,
-        joined_sponsorship_program,
+        joined_sponsorship_date,
         gender,
         profile_picture_id,
         gallery_id
