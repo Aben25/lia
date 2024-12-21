@@ -141,18 +141,58 @@ export default async function ProtectedPage() {
     }
   });
 
+  // Fetch donation distribution data for all sponsees
+  const { data: donationData, error: donationError } = await supabase
+    .from('donation_distribution')
+    .select(
+      'id, donation_given_amount, donation_given_date, distribution_type, sponsee_name_id'
+    )
+    .in('sponsee_name_id', sponseeIds)
+    .order('donation_given_date', { ascending: false }); // Sort by date descending
+
+  if (donationError) {
+    console.error('Error fetching donation data:', donationError);
+  }
+
+  // Create a map of donations by sponsee ID
+  const donationMap = (donationData || []).reduce((acc, donation) => {
+    if (!acc[donation.sponsee_name_id]) {
+      acc[donation.sponsee_name_id] = [];
+    }
+    acc[donation.sponsee_name_id].push(donation);
+    return acc;
+  }, {});
+
+  // Attach donations to each sponsee
+  sponseesList.forEach((sponsee) => {
+    if (sponsee) {
+      const donations = donationMap[sponsee.id] || [];
+      sponsee.donations = donations;
+      // Calculate total donations
+      sponsee.totalDonations = donations.reduce(
+        (sum, donation) => sum + (donation.donation_given_amount || 0),
+        0
+      );
+    }
+  });
+
   return (
-    <div className="flex-1 w-full">
-      {sponseesList.length > 0 ? (
-        sponseesList.map((child) => (
-          <ChildDetails
-            key={child.id}
-            child={{ ...child, gender: child.gender || 'Unknown' }}
-          />
-        ))
-      ) : (
-        <p>No sponsored children found.</p>
-      )}
+    <div className="container mx-auto py-10">
+      <h1 className="text-3xl font-bold tracking-tight mb-8">
+        Your Sponsored Children
+      </h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {sponseesList.length > 0 ? (
+          sponseesList.map((child) => (
+            <ChildDetails
+              key={child.id}
+              child={{ ...child, gender: child.gender || 'Unknown' }}
+            />
+          ))
+        ) : (
+          <p>No sponsored children found.</p>
+        )}
+      </div>
     </div>
   );
 }
