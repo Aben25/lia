@@ -19,6 +19,18 @@ interface GalleryImage {
   url: string;
 }
 
+interface GalleryMediaResponse {
+  id: string;
+  caption: string | null;
+  _order: number;
+  media_type: string;
+  image_id: number;
+  media: {
+    id: number;
+    filename: string;
+  };
+}
+
 export function ImageGallery({ galleryId }: ImageGalleryProps) {
   const [images, setImages] = useState<GalleryImage[]>([]);
   const [selectedImage, setSelectedImage] = useState<number | null>(null);
@@ -29,7 +41,7 @@ export function ImageGallery({ galleryId }: ImageGalleryProps) {
       const supabase = createClient();
 
       // Fetch gallery media
-      const { data: galleryMedia, error: mediaError } = await supabase
+      const { data: galleryMedia, error: mediaError } = (await supabase
         .from('gallery_media')
         .select(
           `
@@ -45,7 +57,10 @@ export function ImageGallery({ galleryId }: ImageGalleryProps) {
         `
         )
         .eq('_parent_id', galleryId)
-        .order('_order');
+        .order('_order')) as {
+        data: GalleryMediaResponse[] | null;
+        error: any;
+      };
 
       if (mediaError) {
         console.error('Error loading gallery media:', mediaError);
