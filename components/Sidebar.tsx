@@ -17,6 +17,7 @@ import {
   FolderKanban,
   Bell,
   MessageCircle,
+  BarChart3,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@assets/logo/white_main_transparent@600x.png';
@@ -144,9 +145,10 @@ const Sidebar = ({ className }: SidebarProps) => {
     {
       href: '/protected',
       icon: LayoutDashboard,
-      label: 'All Statistics',
-      description: 'View overall statistics and metrics',
+      label: 'Dashboard',
+      description: 'View your dashboard',
     },
+
     {
       href: '/protected/your-child',
       icon: Heart,

@@ -1,232 +1,259 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
-import { Card, CardContent } from '@/components/ui/card';
-import { useToast } from '@/components/use-toast';
 import Image from 'next/image';
-import { Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { useState, useEffect } from 'react';
+import { Card } from '@/components/ui/card';
 
 interface GalleryImage {
   id: string;
-  url: string;
-  caption?: string;
-  order?: number;
-  filename: string;
+  caption: string | null;
+  order: number;
   mediaId: number;
+  filename: string;
+  url: string;
 }
 
-interface GalleryData {
-  id: number;
-  full_name: string;
-  gallery: {
-    id: number;
-    gallery_media: Array<{
-      id: string;
-      caption: string | null;
-      _order: number;
-      media_type: 'image' | 'video';
-      image_id: number;
-      media: {
-        id: number;
-        filename: string;
-        mime_type: string;
-      };
-    }>;
+interface GalleryPageProps {
+  params: {
+    id: string;
   };
 }
 
-interface DebugState {
-  gallery?: {
-    data: GalleryData | null;
-    error: any;
-  };
-  processedImages?: GalleryImage[];
-}
-
-export default function GalleryPage({ params }: { params: { id: string } }) {
-  const [images, setImages] = useState<GalleryImage[]>([]);
+export default function GalleryPage({ params }: GalleryPageProps) {
   const [loading, setLoading] = useState(true);
-  const [debug, setDebug] = useState<DebugState>({});
+  const [error, setError] = useState<string | null>(null);
+  const [childName, setChildName] = useState<string>('');
+  const [images, setImages] = useState<GalleryImage[]>([]);
+  const [selectedImage, setSelectedImage] = useState<GalleryImage | null>(null);
+  const router = useRouter();
   const supabase = createClient();
-  const { toast } = useToast();
 
   useEffect(() => {
-    async function fetchGalleryImages() {
+    async function loadGallery() {
       try {
-        console.log('Fetching images for sponsee ID:', params.id);
+        // Get current user
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
 
-        // First, get the gallery ID for the sponsee
-        const { data: sponseeData, error: sponseeError } = await supabase
+        if (userError || !user) {
+          router.push('/sign-in');
+          return;
+        }
+
+        // Fetch sponsor data
+        const { data: sponsor, error: sponsorError } = await supabase
+          .from('sponsors')
+          .select('id')
+          .eq('email', user.email)
+          .single();
+
+        if (sponsorError || !sponsor) {
+          throw new Error('No sponsor data found');
+        }
+
+        // Verify the sponsor has access to this child's gallery
+        const { data: sponsorship, error: sponsorshipError } = await supabase
+          .from('sponsors_rels')
+          .select('sponsees_id')
+          .eq('parent_id', sponsor.id)
+          .eq('sponsees_id', params.id)
+          .single();
+
+        if (sponsorshipError || !sponsorship) {
+          throw new Error('You do not have access to this gallery');
+        }
+
+        // Fetch child's data
+        const { data: child, error: childError } = await supabase
           .from('sponsees')
-          .select('gallery_id')
+          .select('id, full_name, gallery_id')
           .eq('id', params.id)
           .single();
 
-        if (sponseeError) {
-          console.error('Error fetching sponsee:', sponseeError);
-          throw sponseeError;
+        if (childError || !child) {
+          throw new Error('Child not found');
         }
 
-        if (!sponseeData?.gallery_id) {
-          console.log('No gallery found for sponsee');
-          setLoading(false);
-          return;
-        }
+        setChildName(child.full_name);
 
-        // Then fetch the gallery with its media
-        const { data: galleryData, error: galleryError } = await supabase
-          .from('gallery')
+        // Fetch gallery media
+        const { data: galleryMedia, error: mediaError } = await supabase
+          .from('gallery_media')
           .select(
             `
             id,
-            gallery_media (
+            caption,
+            _order,
+            media_type,
+            image_id,
+            media:image_id (
               id,
-              caption,
-              _order,
-              media_type,
-              image_id,
-              media:image_id (
-                id,
-                filename,
-                mime_type
-              )
+              filename
             )
           `
           )
-          .eq('id', sponseeData.gallery_id)
-          .single();
+          .eq('_parent_id', child.gallery_id)
+          .order('_order');
 
-        console.log('Gallery query result:', { galleryData, galleryError });
-        setDebug((prev) => ({
-          ...prev,
-          gallery: { data: galleryData as any, error: galleryError },
-        }));
-
-        if (galleryError) {
-          console.error('Error fetching gallery:', galleryError);
-          throw galleryError;
+        if (mediaError) {
+          throw new Error('Error loading gallery media');
         }
 
-        if (!galleryData?.gallery_media) {
-          console.log('No media found in gallery');
-          setLoading(false);
-          return;
-        }
+        const processedImages = (galleryMedia || [])
+          .filter((item) => item.media_type === 'image' && item.media)
+          .map((item) => ({
+            id: item.id,
+            caption: item.caption,
+            order: item._order,
+            mediaId: item.image_id,
+            filename: item.media.filename,
+            url: `https://ntckmekstkqxqgigqzgn.supabase.co/storage/v1/object/public/Media/media/${encodeURIComponent(
+              item.media.filename
+            )}`,
+          }));
 
-        // Transform the data into the format we need
-        const processedImages = galleryData.gallery_media
-          .filter((item: any) => item.media && item.media_type === 'image')
-          .map((item: any) => {
-            const imageUrl = `https://ntckmekstkqxqgigqzgn.supabase.co/storage/v1/object/public/Media/media/${encodeURIComponent(item.media.filename)}`;
-
-            console.log('Processing image:', {
-              id: item.id,
-              mediaId: item.image_id,
-              filename: item.media.filename,
-              order: item._order,
-              url: imageUrl,
-            });
-
-            return {
-              id: item.id,
-              mediaId: item.image_id,
-              url: imageUrl,
-              caption: item.caption || undefined,
-              order: item._order,
-              filename: item.media.filename,
-            };
-          })
-          .sort(
-            (a: GalleryImage, b: GalleryImage) =>
-              (a.order || 0) - (b.order || 0)
-          );
-
-        console.log('Processed images:', processedImages);
-        setDebug((prev) => ({ ...prev, processedImages }));
         setImages(processedImages);
-      } catch (error: any) {
-        console.error('Error in fetchGalleryImages:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to load gallery images. ' + error.message,
-          variant: 'destructive',
-        });
-      } finally {
+        setLoading(false);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
         setLoading(false);
       }
     }
 
-    fetchGalleryImages();
-  }, [params.id, supabase, toast]);
+    loadGallery();
+  }, [params.id, router, supabase]);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="container mx-auto py-10 space-y-8">
+        <div className="flex items-center space-x-4">
+          <div className="w-24 h-10 bg-gray-200 rounded animate-pulse" />
+          <div className="h-10 w-64 bg-gray-200 rounded animate-pulse" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {[...Array(4)].map((_, i) => (
+            <div
+              key={i}
+              className="aspect-[4/3] bg-gray-200 rounded-lg animate-pulse"
+            />
+          ))}
+        </div>
       </div>
     );
   }
 
-  // Show debug information in development
-  if (process.env.NODE_ENV === 'development' && images.length === 0) {
+  if (error) {
     return (
       <div className="container mx-auto py-10">
-        <Card>
-          <CardContent className="py-8">
-            <div className="text-center text-muted-foreground">
-              No images found in this gallery
-            </div>
-            <pre className="mt-4 p-4 bg-gray-100 rounded text-sm overflow-auto">
-              {JSON.stringify(debug, null, 2)}
-            </pre>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  if (images.length === 0) {
-    return (
-      <div className="container mx-auto py-10">
-        <Card>
-          <CardContent className="py-8">
-            <div className="text-center text-muted-foreground">
-              No images found in this gallery
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+          <h2 className="text-xl font-semibold text-red-800 mb-2">Error</h2>
+          <p className="text-red-600">{error}</p>
+          <Button
+            variant="outline"
+            onClick={() => router.back()}
+            className="mt-4"
+          >
+            Go Back
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold mb-8">Gallery</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {images.map((image) => (
-          <Card key={image.id} className="overflow-hidden">
-            <div className="relative" style={{ paddingTop: '75%' }}>
+    <div className="container mx-auto py-10 space-y-8">
+      <div className="flex items-center space-x-4">
+        <Button
+          variant="outline"
+          onClick={() => router.back()}
+          className="group"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+          Back
+        </Button>
+        <h1 className="text-3xl font-bold tracking-tight">
+          {childName}'s Gallery
+        </h1>
+      </div>
+
+      {images.length === 0 ? (
+        <Card className="p-12">
+          <div className="text-center">
+            <p className="text-muted-foreground">
+              No images in the gallery yet.
+            </p>
+          </div>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {images.map((image) => (
+            <div
+              key={image.id}
+              className="group relative aspect-[4/3] overflow-hidden rounded-xl cursor-pointer shadow-md hover:shadow-xl transition-all duration-300"
+              onClick={() => setSelectedImage(image)}
+            >
               <Image
                 src={image.url}
-                alt={image.caption || `Image ${image.filename}`}
+                alt={image.caption || 'Gallery image'}
                 fill
-                className="object-cover hover:scale-105 transition-transform duration-300"
+                className="object-cover transition-transform duration-300 group-hover:scale-105"
                 sizes="(max-width: 768px) 100vw, 50vw"
-                quality={95}
                 priority
               />
+              {image.caption && (
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                  <p className="text-white text-lg font-medium">
+                    {image.caption}
+                  </p>
+                </div>
+              )}
             </div>
-            {image.caption && (
-              <CardContent className="p-4">
-                <p className="text-base text-muted-foreground">
-                  {image.caption}
-                </p>
-              </CardContent>
+          ))}
+        </div>
+      )}
+
+      <Dialog
+        open={!!selectedImage}
+        onOpenChange={() => setSelectedImage(null)}
+      >
+        <DialogContent className="max-w-7xl w-[95vw] h-[90vh] p-0 overflow-hidden">
+          <div className="relative w-full h-full bg-black/95">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-50 text-white hover:bg-white/20"
+              onClick={() => setSelectedImage(null)}
+            >
+              <X className="h-6 w-6" />
+            </Button>
+            {selectedImage && (
+              <div className="w-full h-full flex items-center justify-center p-4">
+                <Image
+                  src={selectedImage.url}
+                  alt={selectedImage.caption || 'Gallery image'}
+                  fill
+                  className="object-contain"
+                  priority
+                />
+                {selectedImage.caption && (
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                    <p className="text-white text-lg font-medium">
+                      {selectedImage.caption}
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
-          </Card>
-        ))}
-      </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

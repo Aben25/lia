@@ -23,6 +23,8 @@ import AcademicChart from './AcademicChart';
 import { format, parseISO } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { ImageGallery } from '@/components/ImageGallery';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 
 declare global {
   interface Window {
@@ -124,16 +126,18 @@ export default function Component({ child }: { child?: Child } = {}) {
                       }}
                     />
                   </div>
-                  {child?.id && (
-                    <Link
-                      href={`/protected/your-child/gallery/${child.id}`}
-                      className="absolute -bottom-3 left-1/2 -translate-x-1/2"
-                    >
-                      <Button className="bg-blue-500 hover:bg-blue-600 text-white shadow-lg flex items-center gap-2">
-                        <ImageIcon className="w-4 h-4" />
-                        View Gallery
-                      </Button>
-                    </Link>
+                  {child?.gallery_id && (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-blue-500 hover:bg-blue-600 text-white shadow-lg flex items-center gap-2">
+                          <ImageIcon className="w-4 h-4" />
+                          View Gallery
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl w-[90vw]">
+                        <ImageGallery galleryId={child.gallery_id} />
+                      </DialogContent>
+                    </Dialog>
                   )}
                 </div>
 
