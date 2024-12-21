@@ -11,6 +11,10 @@ import {
 import { createClient } from '@/utils/supabase/client';
 import { useEffect, useState } from 'react';
 
+interface GenderCounts {
+  [key: string]: number;
+}
+
 const COLORS = ['#2563eb', '#16a34a', '#dc2626'];
 
 export function Overview() {
@@ -32,7 +36,7 @@ export function Overview() {
         return;
       }
 
-      const genderCounts = sponsees.reduce((acc, { gender }) => {
+      const genderCounts = sponsees.reduce<GenderCounts>((acc, { gender }) => {
         const key = gender || 'Other';
         acc[key] = (acc[key] || 0) + 1;
         return acc;
