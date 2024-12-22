@@ -18,6 +18,7 @@ import {
   Bell,
   MessageCircle,
   BarChart3,
+  Calendar,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@assets/logo/white_main_transparent@600x.png';
@@ -148,7 +149,6 @@ const Sidebar = ({ className }: SidebarProps) => {
       label: 'Dashboard',
       description: 'View your dashboard',
     },
-
     {
       href: '/protected/your-child',
       icon: Heart,
@@ -166,6 +166,12 @@ const Sidebar = ({ className }: SidebarProps) => {
       icon: FolderKanban,
       label: 'Projects',
       description: 'Manage your projects',
+    },
+    {
+      href: '/protected/calendar',
+      icon: Calendar,
+      label: 'Calendar',
+      description: 'View upcoming events',
     },
   ];
 
