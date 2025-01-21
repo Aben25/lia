@@ -52,7 +52,6 @@ export async function middleware(request: NextRequest) {
         new URL('/protected/your-child', request.url)
       );
     }
-    // console.log('unauthenticated', supabase.storage);
 
     // Allow access to auth pages if not signed in
     return response;
@@ -91,7 +90,6 @@ export async function middleware(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/profile') ||
     request.nextUrl.pathname.startsWith('/admin')
   ) {
-    // const isPKCEFlow = await supabase.auth.isP
     if (!session) {
       // If user is not signed in and the current path is protected,
       // redirect to sign-in page.
