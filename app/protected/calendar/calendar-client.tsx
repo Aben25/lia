@@ -92,9 +92,11 @@ export default function CalendarClient({ events }: CalendarClientProps) {
               onSelect={setDate}
               onDayClick={handleDayClick}
               className="p-4"
-              components={{
-                DayContent: (props) => <DayContent {...props} />,
-              }}
+              components={
+                {
+                  // DayContent: (props) => <DayContent {...props} />,
+                }
+              }
               showOutsideDays={true}
               defaultMonth={new Date(2023, 11)} // December 2023
             />

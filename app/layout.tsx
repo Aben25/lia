@@ -52,7 +52,7 @@ export default function RootLayout({
                 </div>
               </header>
 
-              <ToastComponent />
+              {/* <ToastComponent /> */}
 
               {/* Page Content */}
               <main className="flex-1 flex flex-col items-center justify-center">
