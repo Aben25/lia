@@ -15,23 +15,17 @@ import { useSearchParams } from 'next/navigation';
 export function useErrorToast() {
   const searchParams = useSearchParams();
 
-  const [errorMessage, setErrorMessage] = useState(() => {
-    return searchParams.get('error') || '';
-  });
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const errorParams = searchParams.has('error')
-      ? searchParams.entries()
-      : new URLSearchParams(location.hash).entries();
+      ? searchParams
+      : new URLSearchParams(location.hash);
 
-    const { error, error_code, error_description } = errorParams.reduce<{
-      [key: string]: string;
-    }>((params, [k, v]) => {
-      params[k] = v;
-      return params;
-    }, {});
+    const { error, error_code, error_description } =
+      Object.fromEntries(errorParams);
 
-    setErrorMessage(error_description ?? error_code ?? error);
+    setErrorMessage(error_description ?? error_code ?? error ?? '');
   }, [searchParams]);
 
   function handleCloseToast() {
