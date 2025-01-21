@@ -8,6 +8,7 @@ import { ThemeProvider } from 'next-themes';
 import Script from 'next/script';
 import './globals.css';
 import { AuthProvider } from './providers/AuthProvider';
+import ToastComponent from '@/components/ui/toast-component';
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -50,6 +51,8 @@ export default function RootLayout({
                   <ThemeSwitcher />
                 </div>
               </header>
+
+              <ToastComponent />
 
               {/* Page Content */}
               <main className="flex-1 flex flex-col items-center justify-center">
