@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 
 /**
  * A custom hook for managing error toast message from the "error" query param
@@ -13,20 +12,19 @@ import { useSearchParams } from 'next/navigation';
  * }}
  */
 export function useErrorToast() {
-  const searchParams = useSearchParams();
-
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    const errorParams = searchParams.has('error')
-      ? searchParams
-      : new URLSearchParams(location.hash);
+    const searchParams = Object.fromEntries(
+      new URLSearchParams(
+        window.location.search || window.location.hash
+      ).entries()
+    );
 
-    const { error, error_code, error_description } =
-      Object.fromEntries(errorParams);
+    const { error, error_code, error_description } = searchParams;
 
     setErrorMessage(error_description ?? error_code ?? error ?? '');
-  }, [searchParams]);
+  }, []);
 
   function handleCloseToast() {
     setErrorMessage('');
