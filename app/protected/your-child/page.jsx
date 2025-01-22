@@ -24,7 +24,10 @@ export default async function ProtectedPage() {
     console.error('Sponsor error:', sponsorError);
     return (
       <div className="flex-1 w-full flex flex-col gap-12 p-8">
-        <p>No sponsor data found. {sponsorError?.message}</p>
+        <p>
+          No sponsor data found.{' '}
+          {sponsorError?.details ?? sponsorError?.message}
+        </p>
       </div>
     );
   }
