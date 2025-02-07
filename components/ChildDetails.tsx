@@ -320,7 +320,7 @@ export default function Component({ child }: { child?: Child } = {}) {
 
           {/* Tabbed Content */}
           <Tabs defaultValue="personal" className="w-full">
-            <TabsList className="w-full grid grid-cols-2 md:grid-cols-6 gap-1 p-1">
+            <TabsList className="w-full flex flex-wrap p-1 mb-12 md:mb-4">
               <TabsTrigger value="personal" className="gap-2">
                 <Info className="w-4 h-4" />
                 <span className="hidden sm:inline">Personal Details</span>
