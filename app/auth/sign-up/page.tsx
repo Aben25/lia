@@ -43,7 +43,10 @@ export default function SignUp() {
       }
 
       // Show success message and redirect to confirmation page
-      router.push('/auth/verify-email');
+
+      // uncomment this when email verification is needed after sign up
+      // router.push('/auth/verify-email');
+      router.push('/protected/your-child');
     } catch (error) {
       setError('An unexpected error occurred');
     } finally {
