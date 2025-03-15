@@ -1,310 +1,314 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts';
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { createClient } from '@/utils/supabase/client';
+import {
+  RefreshCw,
+  Users,
+  DollarSign,
+  GraduationCap,
+  Calendar,
+} from 'lucide-react';
+import { Overview } from '@/components/statistics/overview';
+import { DonationTrends } from '@/components/statistics/donation-trends';
 
-interface StatisticsState {
-  totalSponsors: number;
-  totalChildren: number;
-  totalDonations: number;
-  averageDonation: number;
-  sponsorshipsByCountry: Array<{ Country: string; count: number }>;
-  donationsTrend: Array<{ month: string; amount: number }>;
-  impactBreakdown: Array<{ category: string; value: number }>;
+interface Sponsor {
+  first_name: string;
+  last_name: string;
+  email: string;
 }
 
-const AllStatistics: React.FC = () => {
+interface DonationWithSponsor {
+  id: number;
+  donation_amount: number;
+  donation_date: string;
+  sponsor_name_id: number;
+  sponsors: Sponsor | null;
+}
+
+interface DashboardStats {
+  totalSponsees: number;
+  totalDonations: number;
+  averageDonation: number;
+  activeSponsors: number;
+  recentDonations: Array<{
+    id: number;
+    donation_amount: number;
+    donation_date: string;
+    email: string;
+    name: string;
+  }>;
+  upcomingBirthdays: Array<{
+    id: number;
+    full_name: string;
+    date_of_birth: string;
+  }>;
+}
+
+export default function Dashboard() {
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [stats, setStats] = useState<StatisticsState>({
-    totalSponsors: 0,
-    totalChildren: 0,
+  const [stats, setStats] = useState<DashboardStats>({
+    totalSponsees: 0,
     totalDonations: 0,
     averageDonation: 0,
-    sponsorshipsByCountry: [],
-    donationsTrend: [],
-    impactBreakdown: [],
+    activeSponsors: 0,
+    recentDonations: [],
+    upcomingBirthdays: [],
   });
 
-  useEffect(() => {
-    const fetchStatistics = async () => {
-      try {
-        const supabase = createClient();
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const supabase = createClient();
 
-        // Fetch total sponsors
-        const { count: sponsorsCount, error: sponsorsError } = await supabase
-          .from('Sponsors')
-          .select('*', { count: 'exact', head: true });
+      // Fetch total sponsees
+      const { data: sponsees } = await supabase.from('sponsees').select('*');
+      const totalSponsees = sponsees?.length || 0;
 
-        if (sponsorsError) throw sponsorsError;
+      // Fetch total sponsors count
+      const { count: sponsorsCount } = await supabase
+        .from('sponsors')
+        .select('*', { count: 'exact', head: true });
 
-        // Fetch total children
-        const { count: childrenCount, error: childrenError } = await supabase
-          .from('Sponsees')
-          .select('*', { count: 'exact', head: true });
+      const activeSponsors = sponsorsCount || 0;
 
-        if (childrenError) throw childrenError;
+      // Fetch donations data
+      const { data: donations } = await supabase
+        .from('donation_collection')
+        .select('*')
+        .order('donation_date', { ascending: false });
 
-        // Fetch donations
-        const { data: donations, error: donationsError } = await supabase
-          .from('Sponsors')
-          .select('Amount, "First payment date (America/New_York)"');
-
-        if (donationsError) throw donationsError;
-
-        const totalDonations = donations.reduce(
-          (sum, donation) => sum + (donation.Amount || 0),
+      const totalDonations =
+        donations?.reduce(
+          (sum, d) => sum + (Number(d.donation_amount) || 0),
           0
-        );
-        const averageDonation =
-          donations.length > 0 ? totalDonations / donations.length : 0;
+        ) || 0;
+      const averageDonation = donations?.length
+        ? totalDonations / donations.length
+        : 0;
 
-        // Process donations trend
-        const donationsTrend = donations.reduce<Record<string, number>>(
-          (acc, donation) => {
-            const date = new Date(
-              donation['First payment date (America/New_York)']
-            );
-            const month = date.toLocaleString('default', { month: 'short' });
-            const year = date.getFullYear();
-            const key = `${month} ${year}`;
-            acc[key] = (acc[key] || 0) + (donation.Amount || 0);
-            return acc;
-          },
-          {}
-        );
+      // Fetch recent donations with sponsor details
+      const { data: recentDonationsWithSponsors } = await supabase
+        .from('donation_collection')
+        .select(
+          `
+          id,
+          donation_amount,
+          donation_date,
+          sponsor_name_id,
+          sponsors (
+            first_name,
+            last_name,
+            email
+          )
+        `
+        )
+        .order('donation_date', { ascending: false })
+        .limit(5);
 
-        const donationsTrendArray = Object.entries(donationsTrend)
-          .map(([month, amount]) => {
-            const [monthStr, yearStr] = month.split(' ');
-            return {
-              month,
-              amount,
-              date: new Date(
-                parseInt(yearStr),
-                new Date(`${monthStr} 1, 2000`).getMonth()
-              ),
-            };
-          })
-          .sort((a, b) => a.date.getTime() - b.date.getTime())
-          .map(({ month, amount }) => ({ month, amount }));
+      const recentDonations = (
+        (recentDonationsWithSponsors || []) as unknown as DonationWithSponsor[]
+      ).map((donation) => ({
+        id: donation.id,
+        donation_amount: donation.donation_amount,
+        donation_date: donation.donation_date,
+        email: donation.sponsors?.email || 'Unknown',
+        name: donation.sponsors
+          ? `${donation.sponsors.first_name} ${donation.sponsors.last_name}`
+          : 'Unknown Sponsor',
+      }));
 
-        // Fetch sponsorships by country
-        const { data: sponsorsByCountry, error: countryError } = await supabase
-          .from('Sponsors')
-          .select('Country');
+      // Fetch upcoming birthdays
+      const today = new Date();
+      const thirtyDaysFromNow = new Date();
+      thirtyDaysFromNow.setDate(today.getDate() + 30);
 
-        if (countryError) throw countryError;
+      const { data: upcomingBirthdays } = await supabase
+        .from('sponsees')
+        .select('id, full_name, date_of_birth')
+        .order('date_of_birth');
 
-        const sponsorshipsByCountry = sponsorsByCountry.reduce<
-          Record<string, number>
-        >((acc, sponsor) => {
-          acc[sponsor.Country] = (acc[sponsor.Country] || 0) + 1;
-          return acc;
-        }, {});
+      // Filter birthdays in the next 30 days
+      const filteredBirthdays = (upcomingBirthdays || [])
+        .filter((sponsee) => {
+          if (!sponsee.date_of_birth) return false;
+          const birthday = new Date(sponsee.date_of_birth);
+          const nextBirthday = new Date(
+            today.getFullYear(),
+            birthday.getMonth(),
+            birthday.getDate()
+          );
+          if (nextBirthday < today) {
+            nextBirthday.setFullYear(today.getFullYear() + 1);
+          }
+          return nextBirthday <= thirtyDaysFromNow && nextBirthday >= today;
+        })
+        .slice(0, 5);
 
-        const sponsorshipsByCountryArray = Object.entries(sponsorshipsByCountry)
-          .map(([Country, count]) => ({ Country, count }))
-          .sort((a, b) => b.count - a.count);
+      setStats({
+        totalSponsees,
+        totalDonations,
+        averageDonation,
+        activeSponsors,
+        recentDonations,
+        upcomingBirthdays: filteredBirthdays,
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        // For impact breakdown, we'll use the distribution of sponsored children by grade
-        const { data: sponseesGrades, error: gradesError } = await supabase
-          .from('Sponsees')
-          .select('grade');
-
-        if (gradesError) throw gradesError;
-
-        const impactBreakdown = sponseesGrades.reduce<Record<string, number>>(
-          (acc, sponsee) => {
-            acc[sponsee.grade] = (acc[sponsee.grade] || 0) + 1;
-            return acc;
-          },
-          {}
-        );
-
-        const impactBreakdownArray = Object.entries(impactBreakdown)
-          .map(([category, value]) => ({ category, value }))
-          .sort((a, b) => b.value - a.value);
-
-        setStats({
-          totalSponsors: sponsorsCount || 0,
-          totalChildren: childrenCount || 0,
-          totalDonations,
-          averageDonation,
-          sponsorshipsByCountry: sponsorshipsByCountryArray,
-          donationsTrend: donationsTrendArray,
-          impactBreakdown: impactBreakdownArray,
-        });
-      } catch (err) {
-        console.error('Error in fetchStatistics:', err);
-        setError(
-          `Failed to fetch statistics: ${err instanceof Error ? err.message : String(err)}`
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStatistics();
+  useEffect(() => {
+    fetchDashboardData();
   }, []);
 
-  if (loading) return <div>Loading statistics...</div>;
-  if (error) return <div>Error: {error}</div>;
-
-  const COLORS = [
-    '#0088FE',
-    '#00C49F',
-    '#FFBB28',
-    '#FF8042',
-    '#FF00FF',
-    '#00FFFF',
-    '#800080',
-    '#008000',
-  ];
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6 space-y-8">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-32" />
+          ))}
+        </div>
+        <Skeleton className="h-[400px]" />
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-6">All Statistics</h1>
+    <div className="container mx-auto p-6 space-y-8">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <Button onClick={fetchDashboardData} variant="outline" size="sm">
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Refresh
+        </Button>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader>
-            <CardTitle>Total Sponsors</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Sponsees
+            </CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold text-blue-500">
-              {stats.totalSponsors}
+            <div className="text-2xl font-bold">{stats.totalSponsees}</div>
+            <p className="text-xs text-muted-foreground">
+              Active sponsees in the program
             </p>
           </CardContent>
         </Card>
-
         <Card>
-          <CardHeader>
-            <CardTitle>Total Children Sponsored</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Donations
+            </CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-4xl font-bold text-green-500">
-              {stats.totalChildren}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Total Donations</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-purple-500">
+            <div className="text-2xl font-bold">
               ${stats.totalDonations.toFixed(2)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Total donations received
             </p>
           </CardContent>
         </Card>
-
         <Card>
-          <CardHeader>
-            <CardTitle>Average Donation</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">
+              Average Donation
+            </CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-orange-500">
+            <div className="text-2xl font-bold">
               ${stats.averageDonation.toFixed(2)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Average donation amount
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium">
+              Active Sponsors
+            </CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.activeSponsors}</div>
+            <p className="text-xs text-muted-foreground">
+              Current active sponsors
             </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card>
-          <CardHeader>
-            <CardTitle>Donations Trend</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={stats.donationsTrend}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="month"
-                  scale="point"
-                  padding={{ left: 10, right: 10 }}
-                />
-                <YAxis allowDecimals={false} domain={[0, 'auto']} />
-                <Tooltip />
-                <Legend />
-                <Bar dataKey="amount" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Impact Breakdown (by Grade)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={stats.impactBreakdown}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  label={({ category, percent }) =>
-                    `${category} ${(percent * 100).toFixed(0)}%`
-                  }
-                >
-                  {stats.impactBreakdown.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
+      {/* Donation Trends - Full Width */}
       <Card>
         <CardHeader>
-          <CardTitle>Sponsorships by Country</CardTitle>
+          <CardTitle>Donation Trends</CardTitle>
+          <CardDescription>Monthly donation patterns</CardDescription>
         </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={stats.sponsorshipsByCountry}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="Country"
-                scale="band"
-                padding={{ left: 10, right: 10 }}
-              />
-              <YAxis allowDecimals={false} domain={[0, 'auto']} />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="count" fill="#82ca9d" />
-            </BarChart>
-          </ResponsiveContainer>
+        <CardContent className="h-[400px]">
+          <DonationTrends />
         </CardContent>
       </Card>
+
+      {/* Gender Distribution and Upcoming Birthdays */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Gender Distribution</CardTitle>
+            <CardDescription>
+              Distribution of sponsees by gender
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Overview />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Upcoming Birthdays</CardTitle>
+            <CardDescription>Birthdays in the next 30 days</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {stats.upcomingBirthdays.map((sponsee) => (
+                <div
+                  key={sponsee.id}
+                  className="flex items-center justify-between"
+                >
+                  <div>
+                    <p className="text-sm font-medium">{sponsee.full_name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(sponsee.date_of_birth).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
-};
-
-export default AllStatistics;
+}
