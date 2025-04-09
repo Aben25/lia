@@ -1,6 +1,6 @@
 export default function PrivacyPolicy() {
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10 text-gray-800">
+    <div className="min-h-screen max-w-3xl mx-auto px-4 py-10 bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-100">
       <h1 className="text-3xl font-bold mb-6">Privacy Policy</h1>
       <p className="mb-4 text-sm text-gray-500">
         Effective Date: April 7, 2025
@@ -78,7 +78,7 @@ export default function PrivacyPolicy() {
         For privacy-related questions, contact us at:{' '}
         <a
           href="mailto:info@loveinaction.co"
-          className="text-blue-600 underline"
+          className="text-blue-600 dark:text-blue-400 underline hover:opacity-90 transition"
         >
           info@loveinaction.co
         </a>
